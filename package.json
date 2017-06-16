@@ -4,11 +4,13 @@
   "devDependencies": {
     "background-eslint-hook-impl": "git+https://github.com/BaronaGroup/background-eslint-hook-impl.git#master",
     "eslint": "^4.0.0",
+    "mocha": "^3.4.2",
     "post-commit": "0.0.1"
   },
   "scripts": {
     "eslint": "eslint .",
-    "background-eslint-hook-impl": "background-eslint-hook-impl"
+    "background-eslint-hook-impl": "background-eslint-hook-impl",
+    "test": "mocha"
   },
   "post-commit": [
     "background-eslint-hook-impl"
