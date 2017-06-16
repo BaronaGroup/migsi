@@ -3,8 +3,7 @@ const {MongoClient} = require('mongodb'),
 
 const api = {
   loadPastMigrations,
-  flagComplete,
-  updateDependencies
+  updateStatus
 }
 
 module.exports = function(mongoURL, collection = 'migsimigrations') {
@@ -31,19 +30,11 @@ async function withConnection(mongoURL, handler) {
   }
 }
 
-async function flagComplete(migration) {
+async function updateStatus(migration) {
   const that = this
   withConnection(this.mongoURL, async function(db) {
     const collection = db.collection(that.collection)
     const toSet = _.omit(_.omitBy(migration, entry => _.isFunction(entry)), 'hasBeenRun', 'toBeRun', 'eligibleToRun')
     await collection.updateOne({ migsiName: migration.migsiName}, {$set: toSet}, {upsert: true})
-  })
-}
-
-async function updateDependencies(migsiName, dependencies) {
-  const that = this
-  withConnection(this.mongoURL, async function(db) {
-    const collection = db.collection(that.collection)
-    await collection.updateOne({ migsiName: migsiName}, {$set: {dependencies}})
   })
 }

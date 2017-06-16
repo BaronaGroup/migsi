@@ -5,21 +5,6 @@ const path = require('path'),
   config = require('./config'),
   {findMigrations} = require('./migration-loader')
 
-exports.loadConfig = function () {
-  const configPath = findConfigPath()
-  config.setupConfig(require(configPath))
-}
-
-function findConfigPath(from = __dirname) {
-  let rcpath = from + '/.migsirc'
-  if (fs.existsSync(rcpath)) {
-    return rcpath
-  }
-  const newPath = path.resolve(from, '..')
-  if (newPath === '/') throw new Error('Could not find .migsirc')
-  return findConfigPath(newPath)
-}
-
 const loadAllMigrations = exports.loadAllMigrations = async function () {
   return await findMigrations()
 }
@@ -78,7 +63,7 @@ function updateTemplate(rawTemplate, variables) {
   return rawTemplate.replace(/\[\[FRIENDLY_NAME\]\]/g, variables.friendlyName)
 }
 
-exports.runMigrations = async function(production) {
+exports.runMigrations = async function(production, confirmed) {
   let migrations = await loadAllMigrations()
   if (production) {
     const firstNonProduction = migrations.find(migr => migr.inDevelopment)
@@ -101,7 +86,8 @@ exports.runMigrations = async function(production) {
   }
 
   console.log(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
-  await confirm()
+  if (!confirmed) await confirm()
+
   for (let migration of toBeRun) {
     const before = new Date()
     try {
@@ -117,7 +103,7 @@ exports.runMigrations = async function(production) {
       migration.hasBeenRun = true
       migration.eligibleToRun = !!migration.inDevelopment
       migration.runDate = new Date()
-      config.storage.flagComplete(migration)
+      await config.storage.updateStatus(migration)
     } catch(err) {
       console.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true

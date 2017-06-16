@@ -1,6 +1,7 @@
 const core = require('./core'),
   nodeGetoptLong = require('node-getopt-long'),
-  P = require('bluebird')
+  P = require('bluebird'),
+  config = require('./config')
 
 const commands = {
   'list': list(),
@@ -9,8 +10,12 @@ const commands = {
 }
 
 P.try(async function () {
-  await core.loadConfig()
   const cmdLine = parseCommandLine()
+  if (cmdLine.options.config) {
+    config.setupConfig(require(cmdLine.options.config))
+  } else {
+    config.findAndLoadConfig()
+  }
   await cmdLine.command.action(cmdLine.options)
 }).catch(err => {
   if (!err.printed) {
@@ -25,7 +30,11 @@ function parseCommandLine() {
   let cmdImpl = commands[command]
   if (!cmdImpl) throw new Error('Invalid command: ' + command)
 
-  const options = nodeGetoptLong.options(cmdImpl.options || [], {
+  const defaultOptions = [[
+    'config|conf|c=s', 'Configuration file'
+  ]]
+
+  const options = nodeGetoptLong.options((cmdImpl.options || []).concat(defaultOptions), {
     name: 'migsi'
   })
 

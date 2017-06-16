@@ -19,7 +19,9 @@ function sortMigrations(unsorted) {
   const migrationMap = _.keyBy(unsorted, migration => migration.migsiName)
   // NOTE: we might need a different solution to solve the case where a completed and an unrun migration depend on the same one -- they might end up in an incorrect order
   // perhaps we should add implicit dependencies from the parallel lies
+  console.log(dependencyMap)
   const solved = dependencySolver.solve(dependencyMap)
+  console.log(solved)
   const dependencySorterMigrations = _.compact(solved.filter(e => e !== '*').map(name => migrationMap[name]))
   return fixParallelDependencyOrder(dependencySorterMigrations)
 
@@ -87,6 +89,7 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
   let prev
   const migrations = files.map(function (file) {
     const past = pastMigrations.find(migration => migration.migsiName === file.split('.migsi.js')[0])
+
     if (past && !past.inDevelopment) {
       prev = file
       return Object.assign({}, migrationBase, {hasBeenRun: true}, past)
@@ -127,7 +130,8 @@ async function updateDependencies(migration) {
   if (d2.length) {
     if (d1.length !== d2.length || _.difference(d2, d1).length > 0) {
       console.log('Updating dependencies of', migration.migsiName)
-      await config.storage.updateDependencies(migration.migsiName, d2)
+      migration.dependencies = d2
+      await config.storage.updateStatus(migration)
     }
   }
 }
