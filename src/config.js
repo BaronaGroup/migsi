@@ -1,0 +1,1 @@
+exports.setupConfig = config => Object.assign(exports, config)
