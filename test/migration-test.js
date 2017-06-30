@@ -40,13 +40,24 @@ describe('migration-test', function () {
       await runMigrations()
       await assertMigrations(['b', 'a'])
     })
+
     it('is possible to specify multiple dependencies', async function () {
-      await createMigration('a', { dependencies: ['c']}, {explicitName: '0000-a'})
-      await createMigration('b', {dependencies: ['a', 'd']})
-      await createMigration('c', {dependencies: ['x']})
-      await createMigration('d', {dependencies: ['a', 'c']})
+      await createMigration('a', {dependencies: ['0000-c']}, {explicitName: '0000-a'})
+      await createMigration('b', {dependencies: ['0000-a', '0000-d']}, {explicitName: '0000-b'})
+      await createMigration('c', {dependencies: ['0000-x']}, {explicitName: '0000-c'})
+      await createMigration('d', {dependencies: ['0000-a', '0000-c']}, {explicitName: '0000-d'})
       await runMigrations()
       await assertMigrations(['c', 'a', 'd', 'b'])
     })
+  })
+
+  describe('conflicts', async function() {
+    it('fails if there is a migration to be run and a later (production) migration has already been run')
+    it('fails if there are cyclic dependencies')
+  })
+
+  describe('conflict avoidance', function() {
+    it('prioritizes production migrations when both those and development migrations are eligible to run')
+    it("prioritizes migrations that don't need to be run (even if they could)" )
   })
 })

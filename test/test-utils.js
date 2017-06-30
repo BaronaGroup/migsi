@@ -31,9 +31,10 @@ exports.configure = function() {
   })
 }
 
-exports.createMigration = function(name, opts = {}) {
+exports.createMigration = function(name, opts = {}, {explicitName} = {}) {
+  const fn = explicitName || `${pad(index++, 6)}-${name}`
   opts.friendlyName = name
-  let fullFilename = `${__dirname}/../test-workspace/${pad(index++, 6)}-${name}.migsi.js`
+  let fullFilename = `${__dirname}/../test-workspace/${fn}.migsi.js`
   fs.writeFileSync(fullFilename, `
   const testUtils = require('../test/test-utils') 
   const opts = ${JSON.stringify(opts, null, 2)}
