@@ -77,6 +77,8 @@ should work as well.
 - `using` allows declaring code dependencies for migration scripts. See the "using" section for more information on them.
   The dependencies in the configuration file are created as a mapping from the name to the actual implementation.
   
+- `local` is reserved for application-specific customizations. It's all up to you.
+  
 #### Storage
 
 Storage should include an implementation of migration status storage engine. Migsi comes with a few built in
@@ -140,6 +142,9 @@ A script that is still under development will be re-run if its version number ch
 
 In production migration scripts the version number has no effect unless the `allowRerunningAllMigrations`, in which case
 changing the version number causes the script and all those depending on it to be re-run.
+
+A special value of `hash` in as the version prompts migsi to calculate the hash of the migration file and use it
+as the version identifier. Do be aware that this of course does not detect changes to its dependencies.
 
 ### dependencies
 

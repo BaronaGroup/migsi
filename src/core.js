@@ -99,17 +99,17 @@ exports.runMigrations = async function(production, confirmed) {
 
   const supportManager = new SupportManager(toBeRun)
 
+  console.log(toBeRun.map(t => t.migsiName))
   for (let migration of toBeRun) {
+    console.log(toBeRun.length)
+
     const before = new Date()
     try {
       process.stdout.write(cliColor.xterm(33)('Running: '))
       console.log(migration.migsiName)
       const supportObjs = await supportManager.prepare(migration)
-      try {
-        await migration.run(...supportObjs)
-      } finally {
-        await supportManager.finish(migration)
-      }
+      await migration.run(...supportObjs)
+      await supportManager.finish(migration)
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
@@ -121,6 +121,7 @@ exports.runMigrations = async function(production, confirmed) {
       migration.runDate = new Date()
       await config.storage.updateStatus(migration)
     } catch(err) {
+      await supportManager.destroy()
       console.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
       throw err

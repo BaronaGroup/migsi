@@ -3,7 +3,7 @@ const _ = require('lodash'),
 
 module.exports = class SupportManager {
   constructor(migrations) {
-    this.remainingMigrations = migrations
+    this.remainingMigrations = [...migrations]
     this.prepared = []
   }
 
@@ -16,11 +16,11 @@ module.exports = class SupportManager {
   }
 
   async finish() {
-    const toClose = this.prepared.filter(preparedSupport => this.remainingMigrations.every(migration => !(migration.using || []).some(support => preparedSupport.identity === support)))
+    const toClose = this.prepared.filter(preparedSupport => !this.remainingMigrations.some(migration => (migration.using || []).some(support => preparedSupport.identity === support)))
     for (let supportToClose of toClose) {
-      await (supportToClose.implementation.close || _.get(supportToClose, ['value', 'close']) || noop)
+      await (supportToClose.implementation.close || _.get(supportToClose, ['value', 'close']) || noop)()
     }
-    this.prepared = _.subtract(this.prepared, toClose)
+    this.prepared = _.difference(this.prepared, toClose)
   }
 
   async prepareSupport(identity) {
@@ -28,10 +28,16 @@ module.exports = class SupportManager {
       return
     }
     const rawImplementation = loadSupport(identity)
-    const implementation = rawImplementation.setup ? await rawImplementation.setup() : rawImplementation
-    const value = await (implementation.open || implementation)()
+    if (!rawImplementation) throw new Error('Could not find code dependency ' + identity)
+    const implementation = rawImplementation.setup ? await rawImplementation.setup(config) : rawImplementation
+    const value = await (implementation.open || implementation)(config)
 
     this.prepared.push({identity, value, implementation})
+  }
+
+  async destroy() {
+    this.remainingMigrations = []
+    return await this.finish()
   }
 }
 

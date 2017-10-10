@@ -59,7 +59,7 @@ function checkMigrationOrderValidity(migrations, dependenciesHaveBeenUpdated = f
     potentialDependencyMigration,
     toBeRun = []
   for (let migration of migrations) {
-    if (migration.toBeRun) {
+    if (migration.toBeRun || (anyToRun && config.allowRerunningAllMigrations)) {
       anyToRun = true
       toBeRun.push(migration.migsiName)
     } else {
