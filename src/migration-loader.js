@@ -17,8 +17,6 @@ const migrationBase = {
 function sortMigrations(unsorted) {
   const dependencyMap = _.fromPairs(unsorted.map(migration => [migration.migsiName, migration.dependencies.length ? migration.dependencies : ['*']]))
   const migrationMap = _.keyBy(unsorted, migration => migration.migsiName)
-  // NOTE: we might need a different solution to solve the case where a completed and an unrun migration depend on the same one -- they might end up in an incorrect order
-  // perhaps we should add implicit dependencies from the parallel lies
   const solved = dependencySolver.solve(dependencyMap)
   const dependencySorterMigrations = _.compact(solved.filter(e => e !== '*').map(name => migrationMap[name]))
   return fixParallelDependencyOrder(dependencySorterMigrations)

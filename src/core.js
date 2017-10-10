@@ -55,7 +55,7 @@ function findTemplate(templateName) {
     }
   }
   const candidate2 = path.join(__dirname + '/../templates', templateName + '.js')
-  console.log(candidate2)
+
   if (fs.existsSync(candidate2)) {
     return candidate2
   }
