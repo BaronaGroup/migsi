@@ -23,8 +23,20 @@ exports.createMigrationScript = async function (friendlyName, templateName) {
   if (fs.existsSync(ffn)) {
     throw new Error(ffn + 'already exists')
   }
+  ensureDirExists(path.dirname(ffn))
   fs.writeFileSync(ffn, updatedTemplate, 'UTF-8')
   return ffn
+}
+
+function ensureDirExists(path) {
+  if (!fs.existsSync(path)) {
+    ensureDirExists(getParent(path))
+    fs.mkdirSync(path)
+  }
+
+  function getParent(path) {
+    return path.split(/[/\\]/g).slice(0, -1).join(require('path').sep)
+  }
 }
 
 async function getFilenamePrefix(opts) {
