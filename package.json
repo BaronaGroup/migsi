@@ -22,6 +22,7 @@
     "background-eslint-hook"
   ],
   "main": "lib/migsi.js",
+  "bin": "./bin/migsi",
   "dependencies": {
     "bluebird": "^3.5.0",
     "cli-color": "^1.2.0",
