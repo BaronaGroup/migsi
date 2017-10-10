@@ -17,7 +17,7 @@ exports.createMigrationScript = async function (friendlyName, templateName) {
   const relativePath = migPath.slice(0, -1)
   const filename = getFilenameTimestamp() + '-' + toFilename(plainName) + '.migsi.js'
   const templateImpl = loadTemplate(templateName)
-  const updatedTemplate = updateTemplate(templateImpl, {friendlyName})
+  const updatedTemplate = await updateTemplate(templateImpl, {friendlyName})
   const ffn = path.join(config.migrationDir, relativePath, filename)
 
   if (fs.existsSync(ffn)) {
@@ -64,8 +64,9 @@ function findTemplate(templateName) {
   throw new Error('Template not found: ' + templateName)
 }
 
-function updateTemplate(rawTemplate, variables) {
+async function updateTemplate(rawTemplate, variables) {
   return rawTemplate.replace(/\[\[FRIENDLY_NAME\]\]/g, variables.friendlyName)
+    .replace(/\[\[IMPLICIT_DEPENDENCY\]\]/g, await getImplicitDependencyName())
 }
 
 exports.runMigrations = async function(production, confirmed) {
@@ -128,3 +129,7 @@ async function confirm() {
   return P.delay(500)
 }
 
+async function getImplicitDependencyName() {
+  const migrations = await findMigrations()
+  return (_.last(migrations) || {}).migsiName || ''
+}

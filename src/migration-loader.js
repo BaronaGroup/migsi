@@ -87,22 +87,19 @@ function checkMigrationOrderValidity(migrations, dependenciesHaveBeenUpdated = f
 module.exports.findMigrations = async function findMigrations(dependenciesUpdated = false) {
   const pastMigrations = await config.storage.loadPastMigrations()
   const files = findAllMigrationFiles()
-  let prev
   const migrations = files.map(function (file) {
     const past = pastMigrations.find(migration => migration.migsiName === file.split('.migsi.js')[0])
 
     if (past && !past.inDevelopment && !config.allowRerunningAllMigrations) {
-      prev = file
-      return Object.assign({}, migrationBase, {hasBeenRun: true}, past)
+      return Object.assign({}, migrationBase, {hasBeenRun: true}, past, {toBeRun: false, eligibleToRun: false})
     }
-    const migration = Object.assign({}, past || {}, migrationBase, loadMigration(file, prev))
+    const migration = Object.assign({}, past || {}, migrationBase, loadMigration(file))
     if (past) {
       migration.versionChanged = migration.version !== past.version
       migration.hasBeenRun = past.hasBeenRun
     }
     migration.toBeRun = !past || migration.versionChanged
     migration.eligibleToRun = !past || !!past.inDevelopment || (config.allowRerunningAllMigrations && migration.toBeRun)
-    prev = file
     return migration
   })
   try {
@@ -137,12 +134,10 @@ async function updateDependencies(migration) {
   }
 }
 
-function loadMigration(filename, prev) {
+function loadMigration(filename) {
   const fullFilename = path.join(config.migrationDir, filename)
-  const migration = require(fullFilename)
-  if (!migration.dependencies && !migration.noImplicitDependencies) {
-    migration.dependencies = prev ? [prev.split('.migsi.js')[0]] : []
-  }
+  const migration = exportFriendlyRequire(fullFilename)
+  migration.dependencies = _.compact(migration.dependencies || [])
   migration.migsiName = filename.split('.migsi.js')[0]
   if (migration.version === 'hash') {
     migration.version += ':' + getHash(fullFilename)
