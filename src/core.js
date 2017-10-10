@@ -105,8 +105,11 @@ exports.runMigrations = async function(production, confirmed) {
       process.stdout.write(cliColor.xterm(33)('Running: '))
       console.log(migration.migsiName)
       const supportObjs = await supportManager.prepare(migration)
-      await migration.run(...supportObjs)
-      await supportManager.finish(migration)
+      try {
+        await migration.run(...supportObjs)
+      } finally {
+        await supportManager.finish(migration)
+      }
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
