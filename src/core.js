@@ -156,12 +156,12 @@ async function getImplicitDependencyName() {
   return (_.last(migrations) || {}).migsiName || ''
 }
 
-exports.configure = function(config) {
-  if (_.isString(config)) {
-    const configuration = require(config)
+exports.configure = function(configData) {
+  if (_.isString(configData)) {
+    const configuration = require(configData)
     config.setupConfig(configuration.default || configuration)
-  } else if (_.isObject(config)) {
-    config.setupConfig(config)
+  } else if (_.isObject(configData)) {
+    config.setupConfig(configData)
   } else {
     config.findAndLoadConfig()
   }
