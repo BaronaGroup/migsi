@@ -29,7 +29,7 @@ function parseCommandLine() {
   const command = process.argv[2]
   process.argv.splice(2, 1)
   let cmdImpl = commands[command]
-  if (!cmdImpl) throw new Error('Invalid command: ' + command)
+  if (!cmdImpl) throw new Error('Invalid command: ' + command + '; available commands are ' + Object.keys(commands).join(', '))
 
   const defaultOptions = [[
     'config|conf|c=s', 'Configuration file'
