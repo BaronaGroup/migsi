@@ -6,7 +6,8 @@ const core = require('./core'),
 const commands = {
   'list': list(),
   'create': create(),
-  'run': run()
+  'run': run(),
+  'ensure-no-development-scripts': ensureNoDevelopmentScripts()
 }
 
 P.try(async function () {
@@ -79,6 +80,17 @@ function run() {
     ],
     action({production = false}) {
       return core.runMigrations(production)
+    }
+  }
+}
+
+function ensureNoDevelopmentScripts() {
+  return {
+    async action() {
+      const migrations = await core.loadAllMigrations()
+      if (migrations.any(mig => mig.inDevelopment)) {
+        throw new Error('There are migration scripts still in develoment.')
+      }
     }
   }
 }
