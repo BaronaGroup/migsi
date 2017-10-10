@@ -120,7 +120,7 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
 }
 
 async function updateDependencies(migration) {
-  const fullFilename = path.join(config.migrationDir, migration.migsiName + '.migsi.js');
+  const fullFilename = path.join(config.migrationDir, migration.migsiName + '.migsi.js')
   const migrationFromDisk = exportFriendlyRequire(fullFilename)
   const d1 = migration.dependencies || [],
     d2 = migrationFromDisk.dependencies || []

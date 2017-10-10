@@ -1,4 +1,4 @@
-const {MongoClient} = require('mongodb'),
+const
   _ = require('lodash'),
   fs = require('fs')
 

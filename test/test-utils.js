@@ -2,7 +2,6 @@ const fs = require('fs'),
   path = require('path'),
   core = require('../src/core'),
   {assert} = require('chai'),
-  cp = require('child_process'),
   config = require('../src/config')
 
 let index = 1
