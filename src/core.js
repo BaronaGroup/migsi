@@ -3,17 +3,21 @@ const path = require('path'),
   P = require('bluebird'),
   cliColor = require('cli-color'),
   config = require('./config'),
-  {findMigrations} = require('./migration-loader')
+  {findMigrations} = require('./migration-loader'),
+  _ = require('lodash')
 
 const loadAllMigrations = exports.loadAllMigrations = async function () {
   return await findMigrations()
 }
 
 exports.createMigrationScript = async function (friendlyName, templateName) {
-  const filename = getFilenameTimestamp() + '-' + toFilename(friendlyName) + '.migsi.js'
+  const migPath = friendlyName.split('/')
+  const plainName = _.last(migPath)
+  const relativePath = migPath.slice(0, -1)
+  const filename = getFilenameTimestamp() + '-' + toFilename(plainName) + '.migsi.js'
   const templateImpl = loadTemplate(templateName)
   const updatedTemplate = updateTemplate(templateImpl, {friendlyName})
-  const ffn = path.join(config.migrationDir, filename)
+  const ffn = path.join(config.migrationDir, relativePath, filename)
 
   if (fs.existsSync(ffn)) {
     throw new Error(ffn + 'already exists')
