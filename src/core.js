@@ -66,7 +66,7 @@ function loadTemplate(template) {
 }
 
 function findTemplate(templateName) {
-  const templateDir = config.getDir('templateDir');
+  const templateDir = config.getDir('templateDir')
   if (templateDir) {
     const candidate = path.join(templateDir, templateName + '.js')
     if (fs.existsSync(candidate)) {
