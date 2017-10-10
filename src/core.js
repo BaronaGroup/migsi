@@ -136,3 +136,14 @@ async function getImplicitDependencyName() {
   const migrations = await findMigrations()
   return (_.last(migrations) || {}).migsiName || ''
 }
+
+exports.configure = function(config) {
+  if (_.isString(config)) {
+    const configuration = require(config)
+    config.setupConfig(configuration.default || configuration)
+  } else if (_.isObject(config)) {
+    config.setupConfig(config)
+  } else {
+    config.findAndLoadConfig()
+  }
+}
