@@ -1,6 +1,6 @@
 const {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, replaceInFile} = require('./test-utils')
 
-describe('migration-test', function () {
+xdescribe('migration-test', function () {
   before(configure)
   beforeEach(wipeWorkspace)
 
