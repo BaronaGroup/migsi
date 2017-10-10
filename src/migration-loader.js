@@ -34,8 +34,12 @@ function fixParallelDependencyOrder(migrations) {
       if (!b.dependencies.includes(a.migsiName)) {
         migs.splice(i, 2, b, a)
       } else {
-        // cannot fix, abort
-        return migs
+        if (config.allowRerunningAllMigrations) {
+          b.eligibleToRun = true
+        } else {
+          // cannot fix, abort
+          return migs
+        }
       }
     } else if (a.toBeRun && !b.toBeRun) { // b could be run, but doesn't need to be
       if (!b.dependencies.includes(a.migsiName)) { // reorder them to for ideal order
@@ -70,7 +74,8 @@ function checkMigrationOrderValidity(migrations, dependenciesHaveBeenUpdated = f
         To solve this problem, you can either:
         - add an explicit dependency to run ${migration.migsiName} before the others; usually by having ${migration.migsiName} depend on a migration script that
         has already been run (the latest one being ${potentialDependencyMigration})
-        - re-create the migration script as a new one (making it the last migration to be run) 
+        - re-create the migration script as a new one (making it the last migration to be run)
+        - set the environment variable MIGSI_ALLOW_RERUNNING_ALL_MIGRATIONS to value of 1 to force it and its descendants to be rerun 
         `)
         }
         throw new Error('Invalid migration order')
@@ -88,7 +93,7 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
   const migrations = files.map(function (file) {
     const past = pastMigrations.find(migration => migration.migsiName === file.split('.migsi.js')[0])
 
-    if (past && !past.inDevelopment) {
+    if (past && !past.inDevelopment && !config.allowRerunningAllMigrations) {
       prev = file
       return Object.assign({}, migrationBase, {hasBeenRun: true}, past)
     }
@@ -97,8 +102,8 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
       migration.versionChanged = migration.version !== past.version
       migration.hasBeenRun = past.hasBeenRun
     }
-    migration.eligibleToRun = true
     migration.toBeRun = !past || migration.versionChanged
+    migration.eligibleToRun = !past || !!past.inDevelopment || (config.allowRerunningAllMigrations && migration.toBeRun)
     prev = file
     return migration
   })
