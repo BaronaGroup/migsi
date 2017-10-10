@@ -3,11 +3,13 @@ const fs = require('fs'),
 
 exports.setupConfig = config => Object.assign(exports, config, getEnvironmentConfig())
 
-exports.findAndLoadConfig = function() {
-  exports.setupConfig(findConfigPath())
+exports.findAndLoadConfig = function () {
+  const path = findConfigPath()
+  const configObj = require(path)
+  exports.setupConfig(configObj.default || configObj)
 }
 
-  function findConfigPath(from = __dirname) {
+function findConfigPath(from = __dirname) {
   let rcpath = from + '/.migsirc'
   if (fs.existsSync(rcpath)) {
     return rcpath
