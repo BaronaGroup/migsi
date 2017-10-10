@@ -18,7 +18,7 @@ exports.createMigrationScript = async function (friendlyName, templateName) {
   const filename = getFilenameTimestamp() + '-' + toFilename(plainName) + '.migsi.js'
   const templateImpl = loadTemplate(templateName)
   const updatedTemplate = await updateTemplate(templateImpl, {friendlyName})
-  const ffn = path.join(config.migrationDir, ...relativePath, filename)
+  const ffn = path.join(config.getDir('migrationDir'), ...relativePath, filename)
 
   if (fs.existsSync(ffn)) {
     throw new Error(ffn + 'already exists')
@@ -49,8 +49,9 @@ function loadTemplate(template) {
 }
 
 function findTemplate(templateName) {
-  if (config.templateDir) {
-    const candidate = path.join(config.templateDir, templateName + '.js')
+  const templateDir = config.getDir('templateDir');
+  if (templateDir) {
+    const candidate = path.join(templateDir, templateName + '.js')
     if (fs.existsSync(candidate)) {
       return candidate
     }

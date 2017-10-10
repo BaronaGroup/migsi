@@ -120,7 +120,7 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
 }
 
 async function updateDependencies(migration) {
-  const fullFilename = path.join(config.migrationDir, migration.migsiName + '.migsi.js')
+  const fullFilename = path.join(config.getDir('migrationDir'), migration.migsiName + '.migsi.js')
   const migrationFromDisk = exportFriendlyRequire(fullFilename)
   const d1 = migration.dependencies || [],
     d2 = migrationFromDisk.dependencies || []
@@ -135,7 +135,7 @@ async function updateDependencies(migration) {
 }
 
 function loadMigration(filename) {
-  const fullFilename = path.join(config.migrationDir, filename)
+  const fullFilename = path.join(config.getDir('migrationDir'), filename)
   const migration = exportFriendlyRequire(fullFilename)
   migration.dependencies = _.compact(migration.dependencies || [])
   migration.migsiName = filename.split('.migsi.js')[0]
@@ -150,9 +150,9 @@ function findAllMigrationFiles() {
 }
 
 function* findMigrationFilesFrom(subdir) {
-  const contents = fs.readdirSync(path.join(config.migrationDir, subdir))
+  const contents = fs.readdirSync(path.join(config.getDir('migrationDir'), subdir))
   for (let file of contents) {
-    const fullPath = path.join(config.migrationDir, subdir, file)
+    const fullPath = path.join(config.getDir('migrationDir'), subdir, file)
     if (isMigrationFile.test(file)) {
       yield path.join(subdir, file)
     } else if (fs.statSync(fullPath).isDirectory()) {

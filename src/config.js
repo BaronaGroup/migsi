@@ -4,9 +4,16 @@ const fs = require('fs'),
 exports.setupConfig = config => Object.assign(exports, config, getEnvironmentConfig())
 
 exports.findAndLoadConfig = function () {
-  const path = findConfigPath()
-  const configObj = require(path)
-  exports.setupConfig(configObj.default || configObj)
+  const configPath = findConfigPath()
+  const configObj = require(configPath)
+  let actualConfigObj = configObj.default || configObj
+  if (!actualConfigObj.pathsRelativeTo) actualConfigObj.pathsRelativeTo = path.dirname(configPath)
+  exports.setupConfig(actualConfigObj)
+}
+
+exports.getDir = configKey => {
+  const confDir = exports[configKey]
+  return path.isAbsolute(confDir) ? confDir : path.join(exports.pathsRelativeTo, confDir)
 }
 
 function findConfigPath(from = __dirname) {
