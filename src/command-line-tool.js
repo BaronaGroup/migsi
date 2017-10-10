@@ -2,7 +2,8 @@
 const core = require('./core'),
   nodeGetoptLong = require('node-getopt-long'),
   P = require('bluebird'),
-  config = require('./config')
+  config = require('./config'),
+  readline = require('readline')
 
 const commands = {
   'list': list(),
@@ -97,6 +98,14 @@ function ensureNoDevelopmentScripts() {
 }
 
 async function query(prompt) {
-  process.stdout.write(prompt + ': ')
-  throw new Error("TODO: implement")
+  const readlineImpl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+  try {
+    return await new Promise(resolve => readlineImpl.question(prompt + ': ', resolve))
+  } finally {
+    readlineImpl.close()
+  }
 }
+
