@@ -4,7 +4,8 @@ const path = require('path'),
   cliColor = require('cli-color'),
   config = require('./config'),
   {findMigrations} = require('./migration-loader'),
-  _ = require('lodash')
+  _ = require('lodash'),
+  SupportManager = require('./support-manager')
 
 const loadAllMigrations = exports.loadAllMigrations = async function () {
   return await findMigrations()
@@ -95,12 +96,16 @@ exports.runMigrations = async function(production, confirmed) {
   console.log(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
   if (!confirmed) await confirm()
 
+  const supportManager = new SupportManager(toBeRun)
+
   for (let migration of toBeRun) {
     const before = new Date()
     try {
       process.stdout.write(cliColor.xterm(33)('Running: '))
       console.log(migration.migsiName)
-      await migration.run()
+      const supportObjs = await supportManager.prepare(migration)
+      await migration.run(...supportObjs)
+      await supportManager.finish(migration)
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
