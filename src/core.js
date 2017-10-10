@@ -75,6 +75,9 @@ exports.runMigrations = async function(production, confirmed) {
       const index = migrations.indexOf(firstNonProduction)
       const excluded = migrations.slice(index)
       const excludedDev = excluded.filter(mig => mig.inDevelopment)
+      if (config.failOnDevelopmentScriptsInProductionMode) {
+        throw new Error(`There are development scripts present for production usage; will not run any migrations.\n\nThe scrips marked for development are ${excludedDev.map(mig => mig.migsiName)}`)
+      }
       migrations = migrations.slice(0, index)
       console.log(`Excluding development mode migration scripts:\n${excludedDev.map(mig => mig.migsiName).join('\n')}`)
       const excludedProd = excluded.filter(mig => mig.production)
