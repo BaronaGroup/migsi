@@ -78,6 +78,10 @@ should work as well.
   The dependencies in the configuration file are created as a mapping from the name to the actual implementation.
   
 - `local` is reserved for application-specific customizations. It's all up to you.
+
+- `prefixAlgorithm` can be used to provide an alternative algorithm (function) for deciding prefixes for migration names.
+  It should be noted that when there are no dependencies defined, alphabetical order is used for the migration order,
+  so it might not be a bad idea to have the prefix be based on the current moment of time.
   
 #### Storage
 

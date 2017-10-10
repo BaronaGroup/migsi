@@ -15,7 +15,7 @@ exports.createMigrationScript = async function (friendlyName, templateName) {
   const migPath = friendlyName.split('/')
   const plainName = _.last(migPath)
   const relativePath = migPath.slice(0, -1)
-  const filename = getFilenameTimestamp() + '-' + toFilename(plainName) + '.migsi.js'
+  const filename = (await getFilenamePrefix()) + toFilename(plainName) + '.migsi.js'
   const templateImpl = loadTemplate(templateName)
   const updatedTemplate = await updateTemplate(templateImpl, {friendlyName})
   const ffn = path.join(config.getDir('migrationDir'), ...relativePath, filename)
@@ -25,6 +25,11 @@ exports.createMigrationScript = async function (friendlyName, templateName) {
   }
   fs.writeFileSync(ffn, updatedTemplate, 'UTF-8')
   return ffn
+}
+
+async function getFilenamePrefix(opts) {
+  if (config.prefixAlgorithm) return await config.prefixAlgorithm(opts)
+  return getFilenameTimestamp() + '-'
 }
 
 function getFilenameTimestamp() {
