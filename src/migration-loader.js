@@ -33,7 +33,7 @@ function fixParallelDependencyOrder(migrations) {
         migs.splice(i, 2, b, a)
       } else {
         if (config.allowRerunningAllMigrations) {
-          b.eligibleToRun = true
+          returnAllDependants(a, migrations)
         } else {
           // cannot fix, abort
           return migs
@@ -121,7 +121,7 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
 
 async function updateDependencies(migration) {
   const fullFilename = path.join(config.migrationDir, migration.migsiName + '.migsi.js');
-  const migrationFromDisk = require(fullFilename)
+  const migrationFromDisk = exportFriendlyRequire(fullFilename)
   const d1 = migration.dependencies || [],
     d2 = migrationFromDisk.dependencies || []
 
@@ -165,4 +165,35 @@ function getHash(filename) {
   const hash = crypto.createHash('sha256')
   hash.update(fs.readFileSync(filename, 'UTF-8'))
   return hash.digest('hex')
+}
+
+function exportFriendlyRequire(filename) {
+  const module = require(filename)
+  return module.default || module
+}
+
+function returnAllDependants(parent, migrations) {
+  const dependencies = {}
+
+  for (let migration of migrations) {
+    if (isDependant(migration, parent)) {
+      migration.eligibleToRun = true
+      migration.toBeRun = true
+    }
+  }
+
+  function isDependant(migration, potentialParent) {
+    return getAllDependencies(migration).includes(potentialParent.migsiName)
+  }
+
+  function getAllDependencies(migration) {
+    if (dependencies[migration.migsiName]) return dependencies[migration.migsiName]
+
+    let migDeps = migration.dependencies || []
+    return dependencies[migration.migsiName] = _.flatten(migDeps.concat(migDeps.map(migrationName => getAllDependencies(getMigration(migrationName)))))
+  }
+
+  function getMigration(name) {
+    return migrations.find(migration => migration.migsiName === name)
+  }
 }
