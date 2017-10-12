@@ -13,6 +13,7 @@ exports.findAndLoadConfig = function () {
 
 exports.getDir = configKey => {
   const confDir = exports[configKey]
+  if (!confDir) return confDir
   return path.isAbsolute(confDir) ? confDir : path.join(exports.pathsRelativeTo, confDir)
 }
 
