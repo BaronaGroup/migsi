@@ -3,7 +3,8 @@ const path = require('path'),
   dependencySolver = require('dependency-solver'),
   _ = require('lodash'),
   crypto = require('crypto'),
-  config = require('./config')
+  config = require('./config'),
+  logger = require('./logger')
 
 const isMigrationFile = /\.migsi\.js$/
 
@@ -17,6 +18,7 @@ const migrationBase = {
 function sortMigrations(unsorted) {
   const dependencyMap = _.fromPairs(unsorted.map(migration => [migration.migsiName, migration.dependencies.length ? migration.dependencies : ['*']]))
   const migrationMap = _.keyBy(unsorted, migration => migration.migsiName)
+  if (process.env.MIGSI_PRINT_DEPENDENCY_MAP) logger.log(JSON.stringify(dependencyMap, null, 2))
   const solved = dependencySolver.solve(dependencyMap)
   const dependencySorterMigrations = _.compact(solved.filter(e => e !== '*').map(name => migrationMap[name]))
   return fixParallelDependencyOrder(dependencySorterMigrations)
@@ -127,7 +129,7 @@ async function updateDependencies(migration) {
 
   if (d2.length) {
     if (d1.length !== d2.length || _.difference(d2, d1).length > 0) {
-      console.log('Updating dependencies of', migration.migsiName)
+      logger.log('Updating dependencies of', migration.migsiName)
       migration.dependencies = d2
       await config.storage.updateStatus(migration)
     }

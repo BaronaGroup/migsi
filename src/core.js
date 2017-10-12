@@ -5,7 +5,8 @@ const path = require('path'),
   config = require('./config'),
   {findMigrations} = require('./migration-loader'),
   _ = require('lodash'),
-  SupportManager = require('./support-manager')
+  SupportManager = require('./support-manager'),
+  logger = require('./logger')
 
 const loadAllMigrations = exports.loadAllMigrations = async function () {
   return await findMigrations()
@@ -99,20 +100,20 @@ exports.runMigrations = async function(production, confirmed) {
         throw new Error(`There are development scripts present for production usage; will not run any migrations.\n\nThe scrips marked for development are ${excludedDev.map(mig => mig.migsiName)}`)
       }
       migrations = migrations.slice(0, index)
-      console.log(`Excluding development mode migration scripts:\n${excludedDev.map(mig => mig.migsiName).join('\n')}`)
+      logger.log(`Excluding development mode migration scripts:\n${excludedDev.map(mig => mig.migsiName).join('\n')}`)
       const excludedProd = excluded.filter(mig => mig.production)
-      console.log(`Excluding production mode migration scripts dependant on development scripts:\n${excludedProd.map(mig => mig.migsiName).join('\n')}`)
+      logger.log(`Excluding production mode migration scripts dependant on development scripts:\n${excludedProd.map(mig => mig.migsiName).join('\n')}`)
     }
   }
 
   const toBeRun = migrations.filter(m => m.toBeRun)
 
   if (!toBeRun.length) {
-    console.log('No migrations to be run.')
+    logger.log('No migrations to be run.')
     return
   }
 
-  console.log(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
+  logger.log(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
   if (!confirmed) await confirm()
 
   const supportManager = new SupportManager(toBeRun)
@@ -120,16 +121,16 @@ exports.runMigrations = async function(production, confirmed) {
   for (let migration of toBeRun) {
     const before = new Date()
     try {
-      process.stdout.write(cliColor.xterm(33)('Running: '))
-      console.log(migration.migsiName)
+      logger.write(cliColor.xterm(33)('Running: '))
+      logger.log(migration.migsiName)
       const supportObjs = await supportManager.prepare(migration)
       await migration.run(...supportObjs)
       await supportManager.finish(migration)
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
-      process.stdout.write(cliColor.xterm(40)('Success: '))
-      console.log(migration.migsiName + ', duration ' + duration)
+      logger.write(cliColor.xterm(40)('Success: '))
+      logger.log(migration.migsiName + ', duration ' + duration)
       migration.toBeRun = false
       migration.hasBeenRun = true
       migration.eligibleToRun = !!migration.inDevelopment
@@ -137,7 +138,7 @@ exports.runMigrations = async function(production, confirmed) {
       await config.storage.updateStatus(migration)
     } catch(err) {
       await supportManager.destroy()
-      console.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
+      logger.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
       throw err
     }

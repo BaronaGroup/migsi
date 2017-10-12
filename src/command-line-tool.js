@@ -53,7 +53,7 @@ function list() {
     action: async function (options) {
       const migrations = await core.loadAllMigrations()
       for (let migration of migrations) {
-        console.log(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
+        logger.log(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
       }
     }
   }
@@ -70,7 +70,7 @@ function create() {
         friendlyName = await query('Friendly name')
       }
       const filename = await core.createMigrationScript(friendlyName, template)
-      console.log('Migration script created: ' + filename)
+      logger.log('Migration script created: ' + filename)
     }
   }
 }
