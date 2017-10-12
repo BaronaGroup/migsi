@@ -130,8 +130,7 @@ Creating custom storage implementation is simple. The storage needs to be an obj
 
 Usually you'll want to create migrations using the `create` option of the command line tool, as it sets up a template
 that should be helpful for getting to work on the migration itself as well as a suitable filename. You can also
-just create a file with a filename ending in `.migsi.js` somewhere within the migration directory, but you should
-be aware of the implicit dependencies based on the file name.
+just create a file with a filename ending in `.migsi.js` somewhere within the migration directory.
 
 A migration script is a javascript module, which exports an object with some of the following properties.
 
