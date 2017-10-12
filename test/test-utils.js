@@ -4,11 +4,19 @@ const fs = require('fs'),
   {assert} = require('chai'),
   config = require('../src/config')
 
-let index = 1
 const testResultFile = __dirname + '/../test-workspace/output.json'
+const isInTestWorkspace = /test-workspace/
+
+const wipeTestModuleCache = exports.wipeTestModuleCache = function() {
+  const testModules = Object.keys(require.cache).filter(key => isInTestWorkspace.test(key))
+  for (let testModuleName of testModules) {
+    delete require.cache[testModuleName]
+  }
+}
 
 exports.wipeWorkspace = function() {
   emptyDirectory(__dirname + '/../test-workspace')
+  wipeTestModuleCache()
 }
 
 function emptyDirectory(directory) {
@@ -18,22 +26,24 @@ function emptyDirectory(directory) {
     const ffn = path.join(directory, file)
     if (fs.statSync(ffn).isDirectory()) {
       emptyDirectory(ffn)
+      fs.rmdirSync(ffn)
+    } else {
+      fs.unlinkSync(ffn)
     }
-    fs.unlinkSync(ffn)
   }
 }
 
-exports.configure = function() {
-  config.setupConfig({
-    storage: require('../storage/json-file')(__dirname + '/../test-workspace/status.json'),
-    migrationDir: __dirname + '/../test-workspace'
-  })
+exports.configure = function(overrides = {}) {
+  config.setupConfig(Object.assign({
+    storage: require('../src/storage/json-file')(__dirname + '/../test-workspace/status.json'),
+    migrationDir: __dirname + '/../test-workspace',
+    prefixAlgorithm: () => ''
+  }, overrides))
 }
 
-exports.createMigration = function(name, opts = {}, {explicitName} = {}) {
-  const fn = explicitName || `${pad(index++, 6)}-${name}`
+exports.createMigration = function(name, opts = {}) {
   opts.friendlyName = name
-  let fullFilename = `${__dirname}/../test-workspace/${fn}.migsi.js`
+  let fullFilename = `${__dirname}/../test-workspace/${name}.migsi.js`
   fs.writeFileSync(fullFilename, `
   const testUtils = require('../test/test-utils') 
   const opts = ${JSON.stringify(opts, null, 2)}
@@ -50,13 +60,6 @@ module.exports = Object.assign({
 
 exports.runMigrations = async function(production) {
   return core.runMigrations(production, true)
-}
-
-
-function pad(input, to = 2) {
-  const str = input.toString()
-  if (str.length >= to) return str
-  return ('0000' + str).substr(-to)
 }
 
 exports.runImpl = testName => {
@@ -78,4 +81,12 @@ exports.assertMigrations = function(expected) {
 exports.replaceInFile = function(filename, regexp, replacement) {
   const data = fs.readFileSync(filename, 'UTF-8')
   fs.writeFileSync(filename, data.replace(regexp, replacement), 'UTF-8')
+}
+
+exports.expectFailure = function(promise, failureAssert) {
+  return promise.then(function() {
+    throw new Error('Expected a failure')
+  }, function(err) {
+    if (failureAssert) return failureAssert(err)
+  })
 }
