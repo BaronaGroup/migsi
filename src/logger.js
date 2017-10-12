@@ -18,6 +18,6 @@ exports.error = (...args) => {
 
 exports.write = (...args) => {
   if (!process.env.MIGSI_QUIET) {
-    process.stdout.write  (...args)
+    process.stdout.write(...args)
   }
 }
