@@ -104,6 +104,9 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
     migration.eligibleToRun = !past || !!past.inDevelopment || (config.allowRerunningAllMigrations && migration.toBeRun)
     return migration
   })
+  for (let migration of migrations) {
+    if (!migration.dependencies) migration.dependencies = []
+  }
   try {
     const sortedMigrations = sortMigrations(migrations)
     checkMigrationOrderValidity(sortedMigrations, dependenciesUpdated)
