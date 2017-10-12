@@ -3,3 +3,4 @@ node_modules
 *.iml
 test-workspace
 node6
+npm-debug.log
