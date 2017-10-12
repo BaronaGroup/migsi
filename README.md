@@ -1,6 +1,13 @@
 # migsi
 A node.js migration tool
 
+## Requirements
+
+- node.js: 6+
+
+For node.js major versions 6 and 7 the code goes through babel. On node.js versions 8 and above babel is
+not used, instead the native support for all the features is used. 
+
 ## Command-line tool
 
 Migsi comes with a command-line tool for some common tasks. It is installed to become your `node_modules/.bin/migsi`,

@@ -117,10 +117,7 @@ exports.runMigrations = async function(production, confirmed) {
 
   const supportManager = new SupportManager(toBeRun)
 
-  console.log(toBeRun.map(t => t.migsiName))
   for (let migration of toBeRun) {
-    console.log(toBeRun.length)
-
     const before = new Date()
     try {
       process.stdout.write(cliColor.xterm(33)('Running: '))
