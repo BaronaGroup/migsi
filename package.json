@@ -29,7 +29,7 @@
     "background-eslint-hook": "background-eslint-hook",
     "test": "mocha $*",
     "build-es5": "gulp",
-    "prepublish": "npm run build-es5"
+    "prepare": "npm run build-es5"
   },
   "post-commit": [
     "background-eslint-hook"
