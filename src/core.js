@@ -12,7 +12,7 @@ const loadAllMigrations = exports.loadAllMigrations = async function () {
   return await findMigrations()
 }
 
-exports.createMigrationScript = async function (friendlyName, templateName) {
+exports.createMigrationScript = async function (friendlyName, templateName = 'default') {
   const migPath = friendlyName.split('/')
   const plainName = _.last(migPath)
   const relativePath = migPath.slice(0, -1)
