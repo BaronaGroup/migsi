@@ -12,7 +12,7 @@ module.exports = class SupportManager {
     for (let support of migration.using || []) {
       await this.prepareSupport(support)
     }
-    return (migration.using || []).map(support => this.prepared.find(preparedSupport => preparedSupport.identity = support).value)
+    return (migration.using || []).map(support => this.prepared.find(preparedSupport => preparedSupport.identity === support).value)
   }
 
   async finish() {
