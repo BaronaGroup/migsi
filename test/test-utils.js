@@ -2,7 +2,8 @@ const fs = require('fs'),
   path = require('path'),
   core = require('../src/core'),
   {assert} = require('chai'),
-  config = require('../src/config')
+  config = require('../src/config'),
+  _ = require('lodash')
 
 const testResultFile = __dirname + '/../test-workspace/output.json'
 const isInTestWorkspace = /test-workspace/
@@ -44,14 +45,16 @@ exports.configure = function(overrides = {}) {
 exports.createMigration = function(name, opts = {}) {
   opts.friendlyName = name
   let fullFilename = `${__dirname}/../test-workspace/${name}.migsi.js`
+  const run = (opts.run || async function() {
+    const testUtils = require('../test/test-utils')
+    await testUtils.runImpl(opts.friendlyName)
+  }).toString()
   fs.writeFileSync(fullFilename, `
-  const testUtils = require('../test/test-utils') 
-  const opts = ${JSON.stringify(opts, null, 2)}
+  
+  const opts = ${JSON.stringify(_.omit(opts, 'run'), null, 2)}
   
 module.exports = Object.assign({
-  run: async function() {
-    testUtils.runImpl(opts.friendlyName)
-  }
+  run: ${run}
 }, opts)
   `,
   'UTF-8')
