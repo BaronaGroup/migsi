@@ -207,7 +207,8 @@ The run method gets parameters from the code dependencies declared in the `using
 
 Migration templates should be created in your code base in the template directory declared in the configuration file.
 
-The templates should have the `.js` suffix in their filenames, although the suffix is not used when referring to them.
+The templates should have either `.js` or `.template.js` suffix in their filenames, although the suffix is not used 
+when referring to them.
 
 Your templates can override templates supplied with migsi; this is especially useful with the `default` template, which
 allows you to have your own custom default template.

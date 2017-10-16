@@ -67,16 +67,15 @@ function loadTemplate(template) {
 
 function findTemplate(templateName) {
   const templateDir = config.getDir('templateDir')
-  if (templateDir) {
-    const candidate = path.join(templateDir, templateName + '.js')
+  const candidates = _.compact([
+    templateDir && path.join(templateDir, templateName + '.template.js'),
+    templateDir && path.join(templateDir, templateName + '.js'),
+    path.join(__dirname, '..', 'templates', templateName + '.js')
+  ])
+  for (let candidate of candidates) {
     if (fs.existsSync(candidate)) {
       return candidate
     }
-  }
-  const candidate2 = path.join(__dirname + '/../templates', templateName + '.js')
-
-  if (fs.existsSync(candidate2)) {
-    return candidate2
   }
 
   throw new Error('Template not found: ' + templateName)

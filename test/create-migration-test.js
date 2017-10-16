@@ -36,6 +36,16 @@ describe('create-migration-test.js', function () {
 
       await expectFailure(runMigrations(), err => assert.equal(err.message, 'custom'))
     })
+
+    it('custom templates with .template.js', async function () {
+      const templateDir = path.join(__dirname, '../test-workspace')
+      configure({templateDir})
+      const templateData = `module.exports = { run() { throw new Error('custom')}}`
+      fs.writeFileSync(templateDir + '/custom.template.js', templateData, 'UTF-8')
+      await core.createMigrationScript('drei', 'custom')
+
+      await expectFailure(runMigrations(), err => assert.equal(err.message, 'custom'))
+    })
   })
 
   it('friendly name is set up properly within the migration (assuming template support)', async function () {
