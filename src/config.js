@@ -12,12 +12,16 @@ exports.setupConfig = config => {
   Object.assign(exports, config, getEnvironmentConfig())
 }
 
-exports.findAndLoadConfig = function () {
-  const configPath = findConfigPath()
+const loadConfig = exports.loadConfig = function(configPath) {
   const configObj = require(configPath)
   let actualConfigObj = configObj.default || configObj
   if (!actualConfigObj.pathsRelativeTo) actualConfigObj.pathsRelativeTo = path.dirname(configPath)
   exports.setupConfig(actualConfigObj)
+}
+
+exports.findAndLoadConfig = function () {
+  const configPath = findConfigPath()
+  return loadConfig(configPath)
 }
 
 exports.getDir = configKey => {
