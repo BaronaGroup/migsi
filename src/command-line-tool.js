@@ -111,6 +111,7 @@ async function query(prompt) {
 }
 
 async function confirmation() {
+  if (require('tty').isatty(process.stdin)) return true
   if (process.argv.includes('--yes')) return true
   const response = await query('Do you want to run the migrations? [y/N]')
   return ['y', 'yes'].includes(response.toLowerCase())

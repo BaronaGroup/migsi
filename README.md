@@ -43,7 +43,12 @@ to take care of implementing the functionality on your own.
     npm run migsi -- run --production
     
 This command runs all the migration scripts that are to be run. If `--production` is given, only scripts that
-haven't been marked to be "in development" are run. 
+haven't been marked to be "in development" are run.
+
+This command requests confirmation from the user before actually running the migration scripts. This does not happen
+if the process is not attached to a TTY or if `--yes` has been included on the command line.
+
+    npm run migsi -- run --production --yes 
    
 ### ensure-no-development-scripts
 
