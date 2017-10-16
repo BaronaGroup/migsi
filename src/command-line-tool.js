@@ -92,7 +92,7 @@ function ensureNoDevelopmentScripts() {
   return {
     async action() {
       const migrations = await core.loadAllMigrations()
-      if (migrations.any(mig => mig.inDevelopment)) {
+      if (migrations.some(mig => mig.inDevelopment)) {
         throw new Error('There are migration scripts still in develoment.')
       }
     }
