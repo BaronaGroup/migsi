@@ -16,6 +16,8 @@ module.exports = function(mongoURL, collection = defaultCollectionName) {
   })
 }
 
+module.exports.defaultCollectionName = defaultCollectionName
+
 function loadPastMigrations() {
   const that = this
   return withConnection(this.mongoURL, async function(db) {

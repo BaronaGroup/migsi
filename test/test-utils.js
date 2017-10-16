@@ -35,11 +35,13 @@ function emptyDirectory(directory) {
 }
 
 exports.configure = function(overrides = {}) {
-  config.setupConfig(Object.assign({
+  const configObject = Object.assign({
     storage: require('../src/storage/json-file')(__dirname + '/../test-workspace/status.json'),
     migrationDir: __dirname + '/../test-workspace',
     prefixAlgorithm: () => ''
-  }, overrides))
+  }, overrides)
+
+  config.setupConfig(configObject)
 }
 
 exports.createMigration = function(name, opts = {}) {
