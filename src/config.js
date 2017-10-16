@@ -1,7 +1,16 @@
 const fs = require('fs'),
   path = require('path')
 
-exports.setupConfig = config => Object.assign(exports, config, getEnvironmentConfig())
+let defaultKeys = []
+
+exports.setupConfig = config => {
+  for (let key of Object.keys(exports)) {
+    if (!defaultKeys.includes(key)) {
+      delete exports[key]
+    }
+  }
+  Object.assign(exports, config, getEnvironmentConfig())
+}
 
 exports.findAndLoadConfig = function () {
   const configPath = findConfigPath()
@@ -34,3 +43,5 @@ function getEnvironmentConfig() {
   }
   return additions
 }
+
+defaultKeys = Object.keys(exports)
