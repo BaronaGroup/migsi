@@ -95,6 +95,12 @@ should work as well.
             const now = new Date()
             return now.getFullYear() + '/' + ('0' + (now.getMonth() + 1)).substr(-2) + '/'
         }
+ 
+- `confirmation` is a function, which is called with an array of new migrations before any of them are run. If it returns
+    a truthy value, the migrations are run. If the function returns a falsy value, the migration run is completed without 
+    running any of the scripts (but they will still be queried about the nexttime); if it throws, running the migrations 
+    throws. The function can return a promise that resolves to one of the specified values instead. If the call to 
+    `runMigrations` also includes a confirmation, then the second parameter to this function is its return value.
   
 #### Storage
 
@@ -216,15 +222,31 @@ The templates can have a few variables set up by the migration creation.
 ### API
 
     const migsi = require('migsi')
+
+#### Configuring migsi
     
     // One of:
     migsi.configure() // automatically searches for the configuration file
     migsi.configure(filename) // loads the configuration from the given file
     migsi.configure(configurationObject) // uses the provided object for configuration
+
+### Running migrations
     
     // And one of
     await migsi.runMigrations() // development
-    await migsi.runMigrations(true) // production
+    await migsi.runMigrations({production: true) // production
+
+You can also provide means to confirm running the migrations. This is done by adding they key `confirmation` to the
+first parameter to `runMigrations`.
+
+`confirmation` is a function, which is called with an array of new migrations before any of them are run. If it returns
+a truthy value, the migrations are run. If the function returns a falsy value, the migration run is completed without 
+running any of the scripts (but they will still be queried about the nexttime); if it throws, running the migrations 
+throws. The function can return a promise that resolves to one of the specified values instead. If the call to 
+`runMigrations` also includes a confirmation, then the second parameter to this function is its return value.    
+
+    await migsi.runMigrations({confirmation: async migrations => requestConfirmationFromUser(migrations)})
+    
     
 
     
