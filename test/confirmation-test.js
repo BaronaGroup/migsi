@@ -2,7 +2,7 @@ const {wipeWorkspace, createMigration, assertMigrations, configure, expectFailur
   {runMigrations} = require('../src/core'),
   {assert} = require('chai')
 
-describe('simple-cases', function () {
+describe('confirmation-test', function () {
   beforeEach(wipeWorkspace)
 
   it('by default no confirmation is required', async function () {
@@ -65,6 +65,12 @@ describe('simple-cases', function () {
       await runMigrations({confirmation: async () => true})
       assertMigrations(['a'])
     })
+
+
+    it('can access migrations', async function() {
+      createMigration('a')
+      await runMigrations({confirmation: migrations => assert.equal(migrations[0].friendlyName, 'a')})
+    })
   })
 
   describe('config confirmation', function () {
@@ -125,6 +131,12 @@ describe('simple-cases', function () {
       confValue = true
       await runMigrations()
       assertMigrations(['a'])
+    })
+
+    it('can access migrations', async function() {
+      createMigration('a')
+      configure({confirmation: migrations => assert.equal(migrations[0].friendlyName, 'a')})
+      await runMigrations()
     })
   })
 
@@ -201,8 +213,14 @@ describe('simple-cases', function () {
 
     it('config confirmation is given the return value from run-time confirmation', async function() {
       const value = 'test value'
-      configure({confirmation: msg => assert.equal(msg, value)})
+      createMigration('a')
+      let confirmed = false
+      configure({confirmation: (migrations, msg) => {
+        assert.equal(msg, value)
+        confirmed = true
+      }})
       await runMigrations({confirmation: () => value})
+      assert.ok(confirmed)
     })
   })
 
