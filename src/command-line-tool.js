@@ -2,8 +2,11 @@
 const core = require('./core'),
   nodeGetoptLong = require('node-getopt-long'),
   config = require('./config'),
-  readline = require('readline'),
-  logger = require('./logger')
+  logger = require('./logger'),
+  path = require('path'),
+  inquirer = require('inquirer'),
+  _ = require('lodash'),
+  fs = require('fs')
 
 const commands = {
   'list': list(),
@@ -69,10 +72,60 @@ function create() {
     ],
     async action({friendlyName, template = 'default'}) {
       if (!friendlyName) {
-        friendlyName = await query('Friendly name')
+        return await createWizard()
       }
       const filename = await core.createMigrationScript(friendlyName, template)
       logger.log('Migration script created: ' + filename)
+    }
+  }
+}
+
+async function createWizard() {
+    const templates = await getTemplates()
+
+    const answers = await inquirer.prompt([
+      {
+        name: 'scriptName',
+        message: 'Migration script name (does not have to look like a filename)',
+        validate: value => !!value || 'Please enter a name for the script',
+        prefix: ''
+      },
+      {
+        name: 'template',
+        message: 'Select a template for the migration script',
+        type: 'list',
+        choices: _.map(templates, 'name'),
+        prefix: ''
+      }
+    ])
+
+    const filename = await core.createMigrationScript(answers.scriptName, templates.find(item => item.name === answers.template).refName)
+    logger.log('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
+  }
+
+  function getTemplates() {
+    const customTemplateDir = config.getDir('templateDir')
+    const templates = [...getTemplatesFrom(customTemplateDir)].map(getTemplateInfo)
+    if (!templates.some(item => item.rawName === 'default')) {
+      templates.push({name: '(simple default)', refName: 'default'})
+    }
+    return templates
+  }
+
+  function getTemplateInfo(item) {
+    const template = require(item.filename)
+    return Object.assign({}, item, { name: template.templateName || item.refName})
+  }
+
+  function* getTemplatesFrom(dir, prefix = '') {
+    const isJS = /\.js$/
+    for (let file of fs.readdirSync(dir)) {
+      const fullFilename = path.join(dir, file)
+      if (fs.statSync(fullFilename).isDirectory()) {
+        yield* getTemplatesFrom(fullFilename, path.join(prefix, dir))
+      } else if (isJS.test(file)) {
+        yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 3))
+      }
     }
   }
 }
@@ -100,21 +153,17 @@ function ensureNoDevelopmentScripts() {
   }
 }
 
-async function query(prompt) {
-  const readlineImpl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
-  try {
-    return await new Promise(resolve => readlineImpl.question(prompt + ': ', resolve))
-  } finally {
-    readlineImpl.close()
-  }
-}
-
 async function confirmation() {
-  if (require('tty').isatty(process.stdin)) return true
+  //if (require('tty').isatty(process.stdin)) return true
   if (process.argv.includes('--yes')) return true
-  const response = await query('Do you want to run the migrations? [y/N]')
-  return ['y', 'yes'].includes(response.toLowerCase())
+  const {confirmed} = await inquirer.prompt([
+    {
+      message: 'Do you want to run these migrations?',
+      type: 'confirm',
+      name: 'confirmed',
+      prefix: '',
+      default: false
+    }
+  ])
+  return confirmed
 }

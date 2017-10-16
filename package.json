@@ -41,6 +41,7 @@
   "dependencies": {
     "cli-color": "^1.2.0",
     "dependency-solver": "^1.0.6",
+    "inquirer": "^3.3.0",
     "lodash": "^4.17.4",
     "mongodb": "^2.2.28",
     "node-getopt-long": "^0.3.2"

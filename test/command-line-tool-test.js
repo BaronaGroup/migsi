@@ -24,15 +24,6 @@ describe('command-line-tool-test', function () {
   })
 
   describe('create', function () {
-    it('without parameters', async function () {
-      await run(`echo scriptname | node bin/migsi create --config=${configFile}`)
-      const script = path.join(workspace, 'scriptname.migsi.js')
-      assert.ok(fs.existsSync(script))
-      const loaded = require(script)
-      assert.equal(loaded.friendlyName, 'scriptname')
-      await expectFailure(runMigrations(), e => assert.equal(e.message, 'Not implemented'))
-    })
-
     it('with name on command line', async function() {
       await run(`node bin/migsi create --config=${configFile} --name=another`)
       const script = path.join(workspace, 'another.migsi.js')

@@ -31,8 +31,9 @@ been.
     npm run migsi -- create --friendlyName="migration name here"
     npm run migsi -- create --friendlyName="migration name here" --template mongoMigrationScript
     
-This command creates a new migration script. Unless provided, the template `default` is used. The migration
-script name is prompted for unless provided.
+This command creates a new migration script. Unless provided, the template `default` is used. If migration script
+is not provided on the command line, you are prompted for the script name and its template. The template is chosen
+from custom templates and default.
 
 The migration is created within the migration directory specified in the configuration, and you are then expected
 to take care of implementing the functionality on your own.
@@ -216,6 +217,10 @@ The templates can have a few variables set up by the migration creation.
 - [[FRIENDLY_NAME]], which becomes the friendly name of the migration
 - [[IMPLICIT_DEPENDENCY]], which becomes the name of the implicit dependency for the migration
 
+A template can export `templateName` which is used as the name of the template when selecting a template in `migsi create`.
+
+Any lines containing a `//` comment containing `migsi-template-exclude-line` are excluded from the migration scripts
+created using the template. 
 
 ## Running migrations
 

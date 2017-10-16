@@ -85,6 +85,7 @@ function findTemplate(templateName) {
 async function updateTemplate(rawTemplate, variables) {
   return rawTemplate.replace(/\[\[FRIENDLY_NAME\]\]/g, variables.friendlyName)
     .replace(/\[\[IMPLICIT_DEPENDENCY\]\]/g, await getImplicitDependencyName())
+    .replace(/\n?.+\/\/.+migsi-template-exclude-line/g, '')
 }
 
 exports.runMigrations = async function({production, confirmation} = {}) {
