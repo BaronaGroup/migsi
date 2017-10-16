@@ -1,7 +1,6 @@
 
 const core = require('./core'),
   nodeGetoptLong = require('node-getopt-long'),
-  P = require('bluebird'),
   config = require('./config'),
   readline = require('readline'),
   logger = require('./logger')
@@ -13,7 +12,7 @@ const commands = {
   'ensure-no-development-scripts': ensureNoDevelopmentScripts()
 }
 
-P.try(async function () {
+async function runApp() {
   const cmdLine = parseCommandLine()
   if (cmdLine.options.config) {
     config.setupConfig(require(cmdLine.options.config))
@@ -21,7 +20,9 @@ P.try(async function () {
     config.findAndLoadConfig()
   }
   await cmdLine.command.action(cmdLine.options)
-}).catch(err => {
+}
+
+runApp().catch(err => {
   if (!err.printed) {
     console.error(err.stack || err)
   }

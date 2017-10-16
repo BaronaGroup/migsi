@@ -3,7 +3,7 @@ describe('mongo-storage-test', function () {
     mongoStorage = require('../src/storage/mongo'),
     {assert} = require('chai'),
     {MongoClient} = require('mongodb'),
-    P = require('bluebird')
+    {delay} = require('../src/utils')
 
   const defaultMongoURL = 'mongodb://localhost/migsi-test'
   const mongoURL = process.env.MIGSI_MONGO_URL || defaultMongoURL
@@ -28,7 +28,7 @@ describe('mongo-storage-test', function () {
             connection.collection(customCollectionName).remove({}),
             connection.collection(mongoStorage.defaultCollectionName).remove({}),
           ])
-          await P.delay(200) // another connection might not see the changes immediately, so we delay a bit here
+          await delay(200) // another connection might not see the changes immediately, so we delay a bit here
           enabled = true
         } catch (err) {
           console.error(err.stack)
@@ -68,7 +68,7 @@ describe('mongo-storage-test', function () {
       configure({storage: mongoStorage(mongoURL, customCollectionName)})
       await createMigration('a')
       await runMigrations()
-      await P.delay(200) // another connection might not see the changes immediately, so we delay the assert a bit
+      await delay(200) // another connection might not see the changes immediately, so we delay the assert a bit
       const db = await MongoClient.connect(mongoURL)
       try {
         assert.equal(await db.collection(customCollectionName).count({}), 1)

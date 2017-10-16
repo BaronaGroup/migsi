@@ -39,7 +39,6 @@
   "main": "lib/migsi.js",
   "bin": "./bin/migsi",
   "dependencies": {
-    "bluebird": "^3.5.0",
     "cli-color": "^1.2.0",
     "dependency-solver": "^1.0.6",
     "lodash": "^4.17.4",
