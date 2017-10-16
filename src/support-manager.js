@@ -18,7 +18,7 @@ module.exports = class SupportManager {
   async finish() {
     const toClose = this.prepared.filter(preparedSupport => !this.remainingMigrations.some(migration => (migration.using || []).some(support => preparedSupport.identity === support)))
     for (let supportToClose of toClose) {
-      await (supportToClose.implementation.close || _.get(supportToClose, ['value', 'close']) || noop)()
+      await (supportToClose.implementation.close || _.get(supportToClose, ['value', 'close']) || noop)(supportToClose.value)
     }
     this.prepared = _.difference(this.prepared, toClose)
   }
