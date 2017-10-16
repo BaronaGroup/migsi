@@ -151,7 +151,7 @@ exports.runMigrations = async function({production, confirmation} = {}) {
       }
     }
     if (config.confirmation) {
-      if (!await config.confirmation(confirmResponse)) {
+      if (!await config.confirmation(toBeRun, confirmResponse)) {
         return false
       }
     }
