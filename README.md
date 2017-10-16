@@ -38,6 +38,14 @@ from custom templates and default.
 The migration is created within the migration directory specified in the configuration, and you are then expected
 to take care of implementing the functionality on your own.
 
+### create-template
+
+    npm run migsi -- create-template
+    npm run migsi -- create-template --name="template name"
+    
+This command creates a template in your template directory based on the default template. If you do not provide
+a name for the template, it will be prompted for it.
+
 ### run
 
     npm run migsi -- run

@@ -27,6 +27,7 @@ describe('create-migration-test.js', function () {
 
       await expectFailure(runMigrations(), err => assert.equal(err.message, 'Not implemented'))
     })
+
     it('custom templates', async function () {
       const templateDir = path.join(__dirname, '../test-workspace')
       configure({templateDir})

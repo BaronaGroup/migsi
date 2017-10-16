@@ -12,7 +12,8 @@ const commands = {
   'list': list(),
   'create': create(),
   'run': run(),
-  'ensure-no-development-scripts': ensureNoDevelopmentScripts()
+  'ensure-no-development-scripts': ensureNoDevelopmentScripts(),
+  'create-template': createTemplate()
 }
 
 async function runApp() {
@@ -64,6 +65,30 @@ function list() {
   }
 }
 
+function createTemplate() {
+  return {
+    options: [
+      ['name|n=s', 'Name for the template']
+    ],
+    action: async function ({name: rawName}) {
+      const name = rawName || await queryName()
+
+      const filename = await core.createTemplate(name)
+      logger.log('Template created as ', path.relative(process.cwd(), filename))
+
+      async function queryName() {
+        const {name} = await inquirer.prompt({
+          message: 'Please enter for template',
+          name: 'name',
+          prefix: '',
+          suffix: ':'
+        })
+        return name
+      }
+    }
+  }
+}
+
 function create() {
   return {
     options: [
@@ -81,51 +106,53 @@ function create() {
 }
 
 async function createWizard() {
-    const templates = await getTemplates()
+  const templates = await getTemplates()
 
-    const answers = await inquirer.prompt([
-      {
-        name: 'scriptName',
-        message: 'Migration script name (does not have to look like a filename)',
-        validate: value => !!value || 'Please enter a name for the script',
-        prefix: ''
-      },
-      {
-        name: 'template',
-        message: 'Select a template for the migration script',
-        type: 'list',
-        choices: _.map(templates, 'name'),
-        prefix: ''
-      }
-    ])
-
-    const filename = await core.createMigrationScript(answers.scriptName, templates.find(item => item.name === answers.template).refName)
-    logger.log('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
-  }
-
-  function getTemplates() {
-    const customTemplateDir = config.getDir('templateDir')
-    const templates = [...getTemplatesFrom(customTemplateDir)].map(getTemplateInfo)
-    if (!templates.some(item => item.rawName === 'default')) {
-      templates.push({name: '(simple default)', refName: 'default'})
+  const answers = await inquirer.prompt([
+    {
+      name: 'scriptName',
+      message: 'Migration script name (does not have to look like a filename)',
+      validate: value => !!value || 'Please enter a name for the script',
+      prefix: ''
+    },
+    {
+      name: 'template',
+      message: 'Select a template for the migration script',
+      type: 'list',
+      choices: _.map(templates, 'name'),
+      prefix: ''
     }
-    return templates
-  }
+  ])
 
-  function getTemplateInfo(item) {
-    const template = require(item.filename)
-    return Object.assign({}, item, { name: template.templateName || item.refName})
-  }
+  const filename = await core.createMigrationScript(answers.scriptName, templates.find(item => item.name === answers.template).refName)
+  logger.log('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
+}
 
-  function* getTemplatesFrom(dir, prefix = '') {
-    const isJS = /\.js$/
-    for (let file of fs.readdirSync(dir)) {
-      const fullFilename = path.join(dir, file)
-      if (fs.statSync(fullFilename).isDirectory()) {
-        yield* getTemplatesFrom(fullFilename, path.join(prefix, dir))
-      } else if (isJS.test(file)) {
-        yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 3))
-      }
+function getTemplates() {
+  const customTemplateDir = config.getDir('templateDir')
+  const templates = [...getTemplatesFrom(customTemplateDir)].map(getTemplateInfo)
+  if (!templates.some(item => item.rawName === 'default')) {
+    templates.push({name: '(simple default)', refName: 'default'})
+  }
+  return templates
+}
+
+function getTemplateInfo(item) {
+  const template = require(item.filename)
+  return Object.assign({}, item, {name: template.templateName || item.refName})
+}
+
+function* getTemplatesFrom(dir, prefix = '') {
+  const isJS = /\.js$/,
+    isTemplateJS = /\.template\.js$/
+  for (let file of fs.readdirSync(dir)) {
+    const fullFilename = path.join(dir, file)
+    if (fs.statSync(fullFilename).isDirectory()) {
+      yield* getTemplatesFrom(fullFilename, path.join(prefix, dir))
+    } else if (isTemplateJS.test(file)) {
+      yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 12))}
+    } else if (isJS.test(file)) {
+      yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 3))}
     }
   }
 }

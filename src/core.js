@@ -160,6 +160,16 @@ exports.runMigrations = async function({production, confirmation} = {}) {
   }
 }
 
+exports.createTemplate = async function(name) {
+  const dir = config.getDir('templateDir')
+  if (!dir) throw new Error('You do not have a templateDir in your config')
+  const filename = path.join(dir, `${toFilename(name)}.template.js`)
+  if (fs.existsSync(filename)) throw new Error(filename + ' already exists')
+  const defaultTemplateContents = fs.readFileSync(path.join(__dirname, '..', 'templates', 'default.js'), 'UTF-8')
+  const newTemplateContents = defaultTemplateContents.replace(/\[\[TEMPLATE_NAME]]/g, name.replace(/'/g, "\\'"))
+  fs.writeFileSync(filename, newTemplateContents, 'UTF-8')
+  return filename
+}
 
 async function getImplicitDependencyName() {
   const migrations = await findMigrations()
