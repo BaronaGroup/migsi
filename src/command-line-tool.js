@@ -63,7 +63,7 @@ function list() {
 function create() {
   return {
     options: [
-      ['friendlyName|n=s', 'Friendly name for migration script'],
+      ['friendlyName|name|n=s', 'Friendly name for migration script'],
       ['template|t=s', 'Template name']
     ],
     async action({friendlyName, template = 'default'}) {
