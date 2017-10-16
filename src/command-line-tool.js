@@ -82,7 +82,7 @@ function run() {
       ['production|prod|p', 'Only run production scripts']
     ],
     action({production = false}) {
-      return core.runMigrations({production})
+      return core.runMigrations({production, confirmation})
     }
   }
 }
@@ -110,3 +110,8 @@ async function query(prompt) {
   }
 }
 
+async function confirmation() {
+  if (process.argv.includes('--yes')) return true
+  const response = await query('Do you want to run the migrations? [y/N]')
+  return ['y', 'yes'].includes(response.toLowerCase())
+}
