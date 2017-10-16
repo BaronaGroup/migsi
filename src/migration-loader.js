@@ -19,6 +19,17 @@ function sortMigrations(unsorted) {
   const dependencyMap = _.fromPairs(unsorted.map(migration => [migration.migsiName, migration.dependencies.length ? migration.dependencies : ['*']]))
   const migrationMap = _.keyBy(unsorted, migration => migration.migsiName)
   if (process.env.MIGSI_PRINT_DEPENDENCY_MAP) logger.log(JSON.stringify(dependencyMap, null, 2))
+  const missingDependencies = []
+  for (let migration of unsorted) {
+    for (let dependency of migration.dependencies)
+      if (!migrationMap[dependency]) {
+        missingDependencies.push(dependency)
+      }
+  }
+  if (missingDependencies.length) {
+    throw new Error('Dependencies required but not found: ' + missingDependencies.join(', '))
+  }
+
   const solved = dependencySolver.solve(dependencyMap)
   const dependencySorterMigrations = _.compact(solved.filter(e => e !== '*').map(name => migrationMap[name]))
   return fixParallelDependencyOrder(dependencySorterMigrations)
