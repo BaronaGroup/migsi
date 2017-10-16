@@ -31,7 +31,7 @@
     "test": "mocha $*",
     "build-es5": "gulp",
     "prepare": "npm run build-es5",
-    "release": "npm-release"
+    "release": "npm test && npm-release"
   },
   "post-commit": [
     "background-eslint-hook"
