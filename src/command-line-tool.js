@@ -79,10 +79,11 @@ function create() {
 function run() {
   return {
     options: [
-      ['production|prod|p', 'Only run production scripts']
+      ['production|prod|p', 'Only run production scripts'],
+      ['yes', 'Automatically confirm deployment']
     ],
-    action({production = false}) {
-      return core.runMigrations({production, confirmation})
+    action({production = false, yes: confirmed = false}) {
+      return core.runMigrations({production, confirmation: confirmed ? undefined : confirmation})
     }
   }
 }
