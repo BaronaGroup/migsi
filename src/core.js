@@ -1,6 +1,5 @@
 const path = require('path'),
   fs = require('fs'),
-  P = require('bluebird'),
   cliColor = require('cli-color'),
   config = require('./config'),
   {findMigrations} = require('./migration-loader'),
@@ -88,7 +87,7 @@ async function updateTemplate(rawTemplate, variables) {
     .replace(/\[\[IMPLICIT_DEPENDENCY\]\]/g, await getImplicitDependencyName())
 }
 
-exports.runMigrations = async function(production, confirmed) {
+exports.runMigrations = async function({production, confirmation} = {}) {
   let migrations = await loadAllMigrations()
   if (production) {
     const firstNonProduction = migrations.find(migr => migr.inDevelopment)
@@ -114,7 +113,7 @@ exports.runMigrations = async function(production, confirmed) {
   }
 
   logger.log(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
-  if (!confirmed) await confirm()
+  if (!await confirmMigrations(toBeRun)) return
 
   const supportManager = new SupportManager(toBeRun)
 
@@ -143,11 +142,24 @@ exports.runMigrations = async function(production, confirmed) {
       throw err
     }
   }
+
+  async function confirmMigrations(toBeRun) {
+    let confirmResponse
+    if (confirmation) {
+      if (!(confirmResponse = await confirmation(toBeRun))) {
+        return false
+      }
+    }
+    if (config.confirmation) {
+      if (!await config.confirmation(confirmResponse)) {
+        return false
+      }
+    }
+
+    return true
+  }
 }
 
-async function confirm() {
-  return P.delay(500)
-}
 
 async function getImplicitDependencyName() {
   const migrations = await findMigrations()

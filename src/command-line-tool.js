@@ -82,7 +82,7 @@ function run() {
       ['production|prod|p', 'Only run production scripts']
     ],
     action({production = false}) {
-      return core.runMigrations(production)
+      return core.runMigrations({production})
     }
   }
 }

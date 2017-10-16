@@ -119,4 +119,8 @@ describe('config-options-test', function () {
       assert.ok(fs.existsSync(path.join(__dirname, '../test-workspace/dir/name/test.migsi.js')))
     })
   })
+
+  describe('confirmation', function() {
+    // The tests are implemented in confirmation-test.js
+  })
 })

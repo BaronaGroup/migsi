@@ -63,8 +63,8 @@ module.exports = Object.assign({
   return fullFilename
 }
 
-exports.runMigrations = async function(production) {
-  return core.runMigrations(production, true)
+exports.runMigrations = async function(production, extraOpts) {
+  return core.runMigrations(Object.assign({production}, extraOpts))
 }
 
 exports.runImpl = testName => {
