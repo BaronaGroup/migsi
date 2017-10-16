@@ -8,7 +8,8 @@ const api = {
 }
 
 module.exports = function(filename) {
-  return Object.assign(api, {
+  if (!filename) throw new Error('Filename is required for json-storage')
+  return Object.assign({}, api, {
     filename
   })
 }

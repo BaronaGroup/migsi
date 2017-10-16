@@ -6,8 +6,11 @@ const api = {
   updateStatus
 }
 
-module.exports = function(mongoURL, collection = 'migsimigrations') {
-  return Object.assign(api, {
+const defaultCollectionName = 'migsimigrations'
+
+module.exports = function(mongoURL, collection = defaultCollectionName) {
+  if (!mongoURL) throw new Error('mongo storage must be given a mongo URL to connect to')
+  return Object.assign({}, api, {
     mongoURL,
     collection
   })
