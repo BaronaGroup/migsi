@@ -18,6 +18,7 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
     "mocha": "^3.4.2",
+    "npm-release": "^1.0.0",
     "post-commit": "0.0.1"
   },
   "license": "MIT",
@@ -29,7 +30,8 @@
     "background-eslint-hook": "background-eslint-hook",
     "test": "mocha $*",
     "build-es5": "gulp",
-    "prepare": "npm run build-es5"
+    "prepare": "npm run build-es5",
+    "release": "npm-release"
   },
   "post-commit": [
     "background-eslint-hook"
