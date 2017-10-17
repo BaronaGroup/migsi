@@ -201,7 +201,20 @@ configuration by their name, or using objects themselves.
 The values returned by these objects are provided to the `run` method as its parameters, in the order specified
 in the `using` array.
 
-The using objects can be written in a few ways. Look into `examples/using` for a variety of examples on how they can be written.
+The using objects can be written in a few ways. You can look at the existing ones in `src/using` and the tests in
+`test/using-test.js` to get some ideas.
+
+#### mongodb
+
+Migsi comes with a built in code dependency for mongodb.
+
+You can use it from your `.migsirc` in the following fashion
+
+    using: {
+      mongodb: require('migsi/using/mongodb')(mongoURL),       
+    }
+
+with mongoURL obviously being the URL pointing to your mongo.
 
 ### Run
 
