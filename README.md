@@ -1,6 +1,24 @@
 # migsi
 A node.js migration tool
 
+## What makes migsi special
+
+There are plenty of migration tools already out there, so what makes migsi worthwhile?
+
+- it is a generic migration tool, it is not meant exclusively for databases. If all you want is 
+  "add column to a database" type migrations, maybe this is not the tool for you. Migsi is more suited
+  for migrations with logic, queries and such.
+- migration scripts need development. Some tools make it difficult to run migration scripts again once
+  they have been run even once, even if you make changes. With migsi scripts that are still marked
+  as being "in development" keep on being run whenever they are changed. You can enable the same 
+  functionality for production environments too, if you want.
+- branches: branches and migrations can be difficult to work with; with some tools you might run a migration
+  in one branch and then end up in trouble if another branch attempts to run a different migration instead. 
+  There is no silver bullet of course, but with migsi migration scripts have explicit dependencies on each
+  other, and unrelated scripts can be run freely.
+- interface: migsi includes both an API a command line interface allowing for a lot of flexibility
+  when it comes to creating and running migrations.
+  
 ## Requirements
 
 - node.js: 6+
