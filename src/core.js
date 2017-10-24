@@ -5,7 +5,8 @@ const path = require('path'),
   {findMigrations} = require('./migration-loader'),
   _ = require('lodash'),
   SupportManager = require('./support-manager'),
-  logger = require('./logger')
+  logger = require('./logger'),
+  {trackOutput} = require('./output-tracker')
 
 const loadAllMigrations = exports.loadAllMigrations = async function () {
   return await findMigrations()
@@ -130,8 +131,9 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
       } else {
         rollbackable = []
       }
+      migration.output = {}
       if (!dryRun) {
-        await migration.run(...supportObjs)
+        await trackOutput(migration, 'run', () => migration.run(...supportObjs))
       }
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
@@ -150,10 +152,16 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
 
       await supportManager.finish(migration)
     } catch (err) {
+      migration.failedToRun = true
+      migration.runDate = null
+      migration.hasBeenRun = false
+      migration.output.exception = exceptionToOutput(err)
+      if (!dryRun) {
+        await config.storage.updateStatus(migration)
+      }
       await supportManager.destroy()
       logger.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
-      migration.failedToRun = true
       if (!dryRun) { // support functionality failed, we do not want to be rolling back anything because of it
         await rollback(rollbackable, toBeRun)
       }
@@ -182,13 +190,11 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
         logger.log(migration.migsiName)
         const supportObjs = await supportManager.prepare(migration)
         migration.toBeRun = true
-        migration.hasBeenRun = false
         migration.eligibleToRun = true
         migration.rolledBack = true
-        migration.runDate = null
         if (migration.failedToRun) await config.storage.updateStatus(migration)
-        await migration.rollback(...supportObjs)
-        if (!migration.failedToRun) await config.storage.updateStatus(migration)
+        await trackOutput(migration, 'rollback', () => migration.rollback(...supportObjs))
+        await config.storage.updateStatus(migration)
         const after = new Date(),
           durationMsec = after.valueOf() - before.valueOf()
         const duration = Math.floor(durationMsec / 100) / 10 + ' s'
@@ -198,6 +204,8 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
         await supportManager.finish(migration)
 
       } catch (err) {
+        migration.output.rollbackException = exceptionToOutput(err)
+        await config.storage.updateStatus(migration)
         await supportManager.destroy()
         logger.log(cliColor.xterm(9)('Failure to rollback: ' + migration.migsiName, err.stack || err))
         err.printed = true
@@ -224,7 +232,14 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
   }
 }
 
-exports.createTemplate = async function(name) {
+function exceptionToOutput(err) {
+  return {
+    message: err.message,
+    stack: (err.stack || '').toString()
+  }
+}
+
+exports.createTemplate = async function (name) {
   const dir = config.getDir('templateDir')
   if (!dir) throw new Error('You do not have a templateDir in your config')
   const filename = path.join(dir, `${toFilename(name)}.template.js`)
@@ -240,7 +255,7 @@ async function getImplicitDependencyName() {
   return (_.last(migrations) || {}).migsiName || ''
 }
 
-exports.configure = function(configData) {
+exports.configure = function (configData) {
   if (_.isString(configData)) {
     const configuration = require(configData)
     config.setupConfig(configuration.default || configuration)
