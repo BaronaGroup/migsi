@@ -22,7 +22,7 @@ function loadPastMigrations() {
 }
 
 async function updateStatus(migration) {
-  const newEntry = _.omit(_.omitBy(migration, entry => _.isFunction(entry)), 'hasBeenRun', 'toBeRun', 'eligibleToRun')
+  const newEntry = _.omit(_.omitBy(migration, entry => _.isFunction(entry)), 'toBeRun', 'eligibleToRun')
   const data = this.loadPastMigrations()
   const entry = data.find(entry => entry.migsiName === migration.migsiName)
   if (!entry) {

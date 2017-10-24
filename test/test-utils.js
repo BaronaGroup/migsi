@@ -47,16 +47,27 @@ exports.configure = function(overrides = {}) {
 exports.createMigration = function(name, opts = {}) {
   opts.friendlyName = name
   let fullFilename = `${__dirname}/../test-workspace/${name}.migsi.js`
-  const run = (opts.run || async function() {
+  const defaultRun = (async function() {
     const testUtils = require('../test/test-utils')
     await testUtils.runImpl(opts.friendlyName)
   }).toString()
+
+  const run = (opts.run || function() {
+    return this.__run()
+  }).toString()
+  const rollback = opts.rollback === true ? (async function() {
+    const testUtils = require('../test/test-utils')
+    await testUtils.rollbackImpl(opts.friendlyName)
+  }).toString() : opts.rollback
+
   fs.writeFileSync(fullFilename, `
   
-  const opts = ${JSON.stringify(_.omit(opts, 'run'), null, 2)}
+  const opts = ${JSON.stringify(_.omit(opts, 'run', 'rollback'), null, 2)}
   
 module.exports = Object.assign({
-  run: ${run}
+  run: ${run},
+  __run: ${defaultRun},
+  rollback: ${rollback}
 }, opts)
   `,
   'UTF-8')
@@ -70,6 +81,12 @@ exports.runMigrations = async function(production, extraOpts) {
 exports.runImpl = testName => {
   const results = loadTestResults()
   results.push(testName)
+  fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'UTF-8')
+}
+
+exports.rollbackImpl = testName => {
+  const results = loadTestResults()
+  results.push("rollback:" + testName)
   fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'UTF-8')
 }
 

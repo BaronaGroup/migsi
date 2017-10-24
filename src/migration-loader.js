@@ -6,6 +6,8 @@ const path = require('path'),
   config = require('./config'),
   logger = require('./logger')
 
+const MIGSI_DATA_VERSION = 2
+
 const isMigrationFile = /\.migsi\.js$/
 
 const migrationBase = {
@@ -102,17 +104,19 @@ module.exports.findMigrations = async function findMigrations(dependenciesUpdate
   const files = findAllMigrationFiles()
   const migrations = files.map(function (file) {
     const past = pastMigrations.find(migration => migration.migsiName === file.split('.migsi.js')[0])
+    if (past && !past.migsiVersion) past.migsiVersion = 1
 
-    if (past && !past.inDevelopment && !config.allowRerunningAllMigrations) {
+    if (past && !past.inDevelopment && !config.allowRerunningAllMigrations && (past.hasBeenRun || past.migsiVersion < 2)) {
       return Object.assign({}, migrationBase, {hasBeenRun: true}, past, {toBeRun: false, eligibleToRun: false})
     }
     const migration = Object.assign({}, past || {}, migrationBase, loadMigration(file))
+    migration.migsiVersion = MIGSI_DATA_VERSION
     if (past) {
       migration.versionChanged = migration.version !== past.version
-      migration.hasBeenRun = past.hasBeenRun
+      migration.hasBeenRun = past.hasBeenRun || past.migsiVersion < 2
     }
-    migration.toBeRun = !past || migration.versionChanged
-    migration.eligibleToRun = !past || !!past.inDevelopment || (config.allowRerunningAllMigrations && migration.toBeRun)
+    migration.toBeRun = !past || !past.hasBeenRun || migration.versionChanged
+    migration.eligibleToRun = !past || !past.hasBeenRun || !!past.inDevelopment || (config.allowRerunningAllMigrations && migration.toBeRun)
     return migration
   })
   for (let migration of migrations) {

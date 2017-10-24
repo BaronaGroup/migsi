@@ -117,14 +117,20 @@ exports.runMigrations = async function({production, confirmation} = {}) {
 
   const supportManager = new SupportManager(toBeRun)
 
+  let rollbackable = []
+
   for (let migration of toBeRun) {
     const before = new Date()
     try {
       logger.write(cliColor.xterm(33)('Running: '))
       logger.log(migration.migsiName)
       const supportObjs = await supportManager.prepare(migration)
+      if (migration.rollback) {
+        rollbackable.push(migration)
+      } else {
+        rollbackable = []
+      }
       await migration.run(...supportObjs)
-      await supportManager.finish(migration)
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
@@ -132,15 +138,67 @@ exports.runMigrations = async function({production, confirmation} = {}) {
       logger.log(migration.migsiName + ', duration ' + duration)
       migration.toBeRun = false
       migration.hasBeenRun = true
+      migration.failedToRun = false
+      migration.rolledBack = false
       migration.eligibleToRun = !!migration.inDevelopment
       migration.runDate = new Date()
       await config.storage.updateStatus(migration)
-    } catch(err) {
+
+      await supportManager.finish(migration)
+
+    } catch (err) {
       await supportManager.destroy()
       logger.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
+      migration.failedToRun = true
+      await rollback(rollbackable, toBeRun)
       throw err
     }
+  }
+
+  async function rollback(rollbackable, toBeRun) {
+    if (!rollbackable.length) {
+      logger.log('Rollback is not supported by the failed migration script.')
+      return
+    }
+    const rollbackAll = config.rollbackAll
+    if (rollbackAll && toBeRun[rollbackable.length - 1] !== rollbackable[rollbackable.length - 1]) {
+      logger.warn('Not all run migration scripts support rollback; only rolling back the last ' + rollbackable.length + ' migration scripts')
+    }
+    const toRollback = rollbackAll ? _.reverse(rollbackable) : [_.last(rollbackable)]
+
+    const supportManager = new SupportManager(toRollback)
+
+    for (let migration of toRollback) {
+      const before = new Date()
+      try {
+        logger.write(cliColor.xterm(33)('Rolling back: '))
+        logger.log(migration.migsiName)
+        const supportObjs = await supportManager.prepare(migration)
+        migration.toBeRun = true
+        migration.hasBeenRun = false
+        migration.eligibleToRun = true
+        migration.rolledBack = true
+        migration.runDate = null
+        if (migration.failedToRun) await config.storage.updateStatus(migration)
+        await migration.rollback(...supportObjs)
+        if (!migration.failedToRun) await config.storage.updateStatus(migration)
+        const after = new Date(),
+          durationMsec = after.valueOf() - before.valueOf()
+        const duration = Math.floor(durationMsec / 100) / 10 + ' s'
+        logger.write(cliColor.xterm(40)('Rollback success: '))
+        logger.log(migration.migsiName + ', duration ' + duration)
+
+        await supportManager.finish(migration)
+
+      } catch (err) {
+        await supportManager.destroy()
+        logger.log(cliColor.xterm(9)('Failure to rollback: ' + migration.migsiName, err.stack || err))
+        err.printed = true
+        throw err
+      }
+    }
+
   }
 
   async function confirmMigrations(toBeRun) {

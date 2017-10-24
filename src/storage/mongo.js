@@ -39,7 +39,7 @@ async function updateStatus(migration) {
   const that = this
   withConnection(this.mongoURL, async function(db) {
     const collection = db.collection(that.collection)
-    const toSet = _.omit(_.omitBy(migration, entry => _.isFunction(entry)), 'hasBeenRun', 'toBeRun', 'eligibleToRun')
+    const toSet = _.omit(_.omitBy(migration, entry => _.isFunction(entry)), 'toBeRun', 'eligibleToRun')
     await collection.updateOne({ migsiName: migration.migsiName}, {$set: toSet}, {upsert: true})
   })
 }

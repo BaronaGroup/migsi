@@ -115,6 +115,10 @@ should work as well.
     running any of the scripts (but they will still be queried about the nexttime); if it throws, running the migrations 
     throws. The function can return a promise that resolves to one of the specified values instead. If the call to 
     `runMigrations` also includes a confirmation, then the second parameter to this function is its return value.
+    
+- `rollbackAll` when set to true makes a migration script failure rollback all of the scripts that were run. If set to
+    false only the failed script will be rolled back. Any run scripts that do not support rollback stop the rollback
+    process regardless.
   
 #### Storage
 
@@ -224,6 +228,18 @@ do this is by simply writing the migration as an async function.
 
 The run method gets parameters from the code dependencies declared in the `using` array.
 
+### Rollback
+
+Rollback is a function called after the migration script fails (throws) for the purpose of restoring the system
+to a reasonable state. If the configuration option `rollbackAll` has been set to true, rollback is also called for
+completed migrations succeeded by a failed migration.
+
+Rolled back migrations will be attempted again the next time migrations are to be run.
+
+In the hopefully unlikely scenario where rollback throws, the entire rollback process is aborted. The failed migration
+script will still be flagged to be run again, but if a rollback of an already completed migration fails, it is assumed
+that the script has already been and the rollback failed.
+
 ## Creating migration templates
 
 Migration templates should be created in your code base in the template directory declared in the configuration file.
@@ -262,7 +278,7 @@ created using the template.
     migsi.configure(filename) // loads the configuration from the given file
     migsi.configure(configurationObject) // uses the provided object for configuration
 
-### Running migrations
+#### Running migrations
     
     // And one of
     await migsi.runMigrations() // development
@@ -279,6 +295,11 @@ throws. The function can return a promise that resolves to one of the specified 
 
     await migsi.runMigrations({confirmation: async migrations => requestConfirmationFromUser(migrations)})
     
-    
+### Rollback
+
+Any failed migration scripts are automatically rolled back, if they support rollback.
+
+At this time there is no way to manually roll back existing migrations; tools for doing this may be added at a later
+date. 
 
     
