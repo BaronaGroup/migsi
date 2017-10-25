@@ -35,7 +35,7 @@ function emptyDirectory(directory) {
 }
 
 exports.configure = function(overrides = {}) {
-  const storage = require('../src/storage/json-file')(__dirname + '/../test-workspace/status.json');
+  const storage = require('../src/storage/json-file')(__dirname + '/../test-workspace/status.json')
   const configObject = Object.assign({
     storage: storage,
     migrationDir: __dirname + '/../test-workspace',

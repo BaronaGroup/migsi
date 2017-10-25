@@ -1,4 +1,4 @@
-const {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} = require('./test-utils'),
+const {wipeWorkspace, createMigration, runMigrations, configure, expectFailure} = require('./test-utils'),
   config = require('../src/config'),
   {assert} = require('chai')
 

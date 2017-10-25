@@ -43,3 +43,12 @@ function enableOutputTracking() {
     process.stderr.write = defaultStderrWrite
   }
 }
+
+exports.outputProcessor = {
+  makeLinear(migration, category) {
+    return _.sortBy([
+      ..._.get(migration, ['output', category, 'stdout'], []).map(({timestamp, data}) => ({timestamp, data, stream: 'stdout'})),
+      ..._.get(migration, ['output', category, 'stderr'], []).map(({timestamp, data}) => ({timestamp, data, stream: 'stderr'}))
+    ], 'timestamp')
+  }
+}
