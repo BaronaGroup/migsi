@@ -203,6 +203,8 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
         migration.toBeRun = true
         migration.eligibleToRun = true
         migration.rolledBack = true
+        migration.runDate = null
+        migration.hasBeenRun = false
         if (migration.failedToRun) await config.storage.updateStatus(migration)
         await trackOutput(migration, 'rollback', () => migration.rollback(...supportObjs))
         await config.storage.updateStatus(migration)
