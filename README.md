@@ -161,6 +161,15 @@ provided to the function.
 This storage allows the migration status to be stored in a mongo database, which is especially useful when it serves
 as the main subject of the migration scripts. By default the collection used is `migsimigrations`.
 
+##### none
+
+    { "storage": require('migsi/storage/none') }
+    
+This rather limited storage option stores nothing; it always assumes no migration scripts
+have been run and will not allow new ones to be run. While this option is not useful for 
+most things, it can be useful for scripts that simply want to look at the available migration
+scripts without attempting to run them.
+
 ##### Custom
 
 Creating custom storage implementation is simple. The storage needs to be an object with two methods:
