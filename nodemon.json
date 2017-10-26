@@ -1,0 +1,6 @@
+{
+  "delay": 200,
+  "ignore": [
+    "test-workspace"
+  ]
+}
