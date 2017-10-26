@@ -102,6 +102,23 @@ describe('command-line-tool-test', function () {
     })
   })
 
+  describe('output', function() {
+    describe('data', function () {
+      it('is able to display stdout')
+      it('is able to display stderr')
+      it('is able to display exceptions')
+      it('raw')
+    })
+
+    describe('filtering', function() {
+      it('by name')
+      it('failed')
+      it('since')
+      it('until')
+      it('combined since and until')
+    })
+  })
+
   function run(commandLine) {
     return new Promise((resolve, reject) => {
       cp.exec(commandLine, function (err, stdout, stderr) {
