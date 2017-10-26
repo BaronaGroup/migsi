@@ -65,6 +65,11 @@ describe('command-line-tool-test', function () {
       assertMigrations(['a'])
     })
 
+    it('supports dry-run', async function() {
+      await run(`node bin/migsi run --config=${configFile} --production --yes --dry-run`)
+      assertMigrations([])
+    })
+
   })
 
   describe('list', function () {

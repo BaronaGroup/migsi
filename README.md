@@ -76,6 +76,9 @@ This command requests confirmation from the user before actually running the mig
 if the process is not attached to a TTY or if `--yes` has been included on the command line.
 
     npm run migsi -- run --production --yes 
+    
+If you just want to see what would happen you can add the command line parameter `--dry-run`. It will still
+set up database connections and all that, but the actual migrations are skipped.
    
 ### ensure-no-development-scripts
 

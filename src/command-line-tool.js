@@ -161,10 +161,11 @@ function run() {
   return {
     options: [
       ['production|prod|p', 'Only run production scripts'],
-      ['yes', 'Automatically confirm deployment']
+      ['yes', 'Automatically confirm deployment'],
+      ['dry-run|d', 'Pretend to run migrations without actually doing so']
     ],
-    action({production = false, yes: confirmed = false}) {
-      return core.runMigrations({production, confirmation: confirmed ? undefined : confirmation})
+    action({production = false, yes: confirmed = false, 'dry-run': dryRun}) {
+      return core.runMigrations({production, confirmation: confirmed ? undefined : confirmation, dryRun})
     }
   }
 }

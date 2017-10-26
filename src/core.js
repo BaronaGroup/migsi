@@ -87,7 +87,7 @@ async function updateTemplate(rawTemplate, variables) {
     .replace(/\n?.+\/\/.+migsi-template-exclude-line/g, '')
 }
 
-exports.runMigrations = async function({production, confirmation} = {}) {
+exports.runMigrations = async function({production, confirmation, dryRun = false} = {}) {
   let migrations = await loadAllMigrations()
   if (production) {
     const firstNonProduction = migrations.find(migr => migr.inDevelopment)
@@ -130,7 +130,9 @@ exports.runMigrations = async function({production, confirmation} = {}) {
       } else {
         rollbackable = []
       }
-      await migration.run(...supportObjs)
+      if (!dryRun) {
+        await migration.run(...supportObjs)
+      }
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
@@ -142,19 +144,23 @@ exports.runMigrations = async function({production, confirmation} = {}) {
       migration.rolledBack = false
       migration.eligibleToRun = !!migration.inDevelopment
       migration.runDate = new Date()
-      await config.storage.updateStatus(migration)
+      if (!dryRun) {
+        await config.storage.updateStatus(migration)
+      }
 
       await supportManager.finish(migration)
-
     } catch (err) {
       await supportManager.destroy()
       logger.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
       migration.failedToRun = true
-      await rollback(rollbackable, toBeRun)
+      if (!dryRun) { // support functionality failed, we do not want to be rolling back anything because of it
+        await rollback(rollbackable, toBeRun)
+      }
       throw err
     }
   }
+  return toBeRun
 
   async function rollback(rollbackable, toBeRun) {
     if (!rollbackable.length) {
