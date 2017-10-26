@@ -8,7 +8,8 @@ const core = require('./core'),
   _ = require('lodash'),
   fs = require('fs'),
   {outputProcessor} = require('./output-tracker'),
-  cliColor = require('cli-color')
+  cliColor = require('cli-color'),
+  moment = require('moment')
 
 const commands = {
   'list': list(),
@@ -124,9 +125,14 @@ function output() {
 
   function parseDate(dateStr, dayOffset = 0) {
     if (!dateStr) return undefined
-    const isFullISOString = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{3}.+$^/
+    const isFullISOString = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{3}.+$^/,
+      isDuration = /^(\d+)\s*(\w+)$/
 
     if (isFullISOString.test(dateStr)) return new Date(dateStr)
+    if (isDuration.test(dateStr)) {
+      const [, amount, unit] = dateStr.match(isDuration)
+      return moment().subtract(amount, unit).toDate()
+    }
 
     const extractor = /^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d)(?::(\d\d)(?:\.(\d{3})))?)?$/
     const [, year, month, day, hour = 0, minute = 0, second = 0, msec = 0] = dateStr.match(extractor) || []
