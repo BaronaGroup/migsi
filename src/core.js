@@ -16,8 +16,8 @@ exports.filterMigrations = async function({name, since, until, failed}) {
   const migrations = await findMigrations()
   return migrations.filter(migration => {
     if (name && migration.friendlyName !== name && migration.migsiName !== name) return false
-    if (since && (!migration.hasBeenRun || migration.runDate < since)) return false
-    if (until && (!migration.hasBeenRun || migration.runDate >= until)) return false
+    if (since && (!migration.hasBeenRun || new Date(migration.runDate) < since)) return false
+    if (until && (!migration.hasBeenRun || new Date(migration.runDate) >= until)) return false
     if (failed && !migration.failedToRun) return false
     return true
   })

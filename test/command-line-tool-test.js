@@ -3,7 +3,9 @@ const {wipeWorkspace, runMigrations, expectFailure, assertMigrations, createMigr
   fs = require('fs'),
   {assert} = require('chai'),
   cp = require('child_process'),
-  config = require('../src/config')
+  config = require('../src/config'),
+  moment = require('moment'),
+  _ = require('lodash')
 
 describe('command-line-tool-test', function () {
   const workspace = path.join(__dirname, '..', 'test-workspace'),
@@ -104,18 +106,134 @@ describe('command-line-tool-test', function () {
 
   describe('output', function() {
     describe('data', function () {
-      it('is able to display stdout')
-      it('is able to display stderr')
-      it('is able to display exceptions')
-      it('raw')
+      it('is able to display stdout', async function() {
+        createMigration('s1', { run: () => console.log('hello from within')})
+        await runMigrations()
+        const {stdout } = await run(`node bin/migsi output --config=${configFile}`)
+        assert.ok(stdout.split('\n').some(line => line.includes('stdout') && line.includes('hello from within')))
+      })
+
+      it('is able to display stderr', async function() {
+        createMigration('s1', { run: () => console.error('error from within')})
+        await runMigrations()
+        const {stdout } = await run(`node bin/migsi output --config=${configFile}`)
+        assert.ok(stdout.split('\n').some(line => line.includes('stderr') && line.includes('error from within')))
+      })
+
+      it('is able to display exceptions', async function() {
+        createMigration('s1', { run: () => { throw new Error('This migration failed')}})
+        await expectFailure(runMigrations())
+        const {stdout } = await run(`node bin/migsi output --config=${configFile}`)
+        assert.ok(stdout.split('\n').some(line => line.includes('This migration failed')))
+      })
+
+      it('raw', async function() {
+        createMigration('s1', { run: () => console.log('hello from within')})
+        await runMigrations()
+        const {stdout } = await run(`node bin/migsi output --config=${configFile} --raw`)
+        assert.ok(stdout.split('\n').includes('hello from within'))
+      })
     })
 
     describe('filtering', function() {
-      it('by name')
-      it('failed')
-      it('since')
-      it('until')
-      it('combined since and until')
+      it('by name', async function() {
+        createMigration('s1', { run: () => console.log('s1 says hi')})
+        createMigration('s2', { run: () => console.log('s2 says hi')})
+        await runMigrations()
+        const {stdout } = await run(`node bin/migsi output --config=${configFile} --name=s1`)
+        const lines = stdout.split('\n')
+        assert.ok(lines.some(line => line.includes('stdout') && line.includes('s1 says hi')))
+        assert.ok(!lines.some(line => line.includes('stdout') && line.includes('s2 says hi')))
+      })
+
+      it('failed', async function() {
+        createMigration('s1', { run: () => console.log('s1 says hi')})
+        createMigration('s2', { run: () => {throw new Error('s2 says fail')}, dependencies: ['s1']})
+        await expectFailure(runMigrations())
+        const {stdout } = await run(`node bin/migsi output --config=${configFile} --failed`)
+        const lines = stdout.split('\n')
+        assert.ok(!lines.some(line => line.includes('s1 says hi')))
+        assert.ok(lines.some(line => line.includes('s2 says fail')))
+      })
+
+      describe('durations', function() {
+        beforeEach(async function() {
+          for (let i = 1; i < 16; i += 2) {
+            const desiredRunDate = moment().subtract(Math.pow(2, i), 'hours').toDate()
+            createMigration('m' + i, { desiredRunDate, i, run: function() { console.log('I am', this.i)}})
+          }
+          createMigration('mnow', { run: function() { console.log('I am now')} })
+          await runMigrations()
+          for (let past of await config.storage.loadPastMigrations()) {
+            if (past.desiredRunDate) {
+              past.runDate = past.desiredRunDate
+              await config.storage.updateStatus(past)
+            }
+          }
+        })
+
+        // TODO: some of these tests can fail if the beforeeach is run before a full hour and the it after;
+        // figure out a solution for that
+
+        describe('since', function() {
+          it('specific date', async function() {
+            const oneWeekAgo = moment().subtract(1, 'week').toDate().toISOString()
+            const {stdout } = await run(`node bin/migsi output --config=${configFile} --since=${oneWeekAgo}`)
+            assertRan(stdout, 'now', 1, 3, 5, 7)
+          })
+
+          it('date with a local timestamp is accepted', async function() {
+            const now = new Date()
+            const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())).toISOString().split('T')[0]
+            const {stdout} = await run(`node bin/migsi output --config=${configFile} --since=${today}`)
+            const expected = _.compact([
+              'now',
+              new Date().getHours() >= 2 && 1,
+              new Date().getHours() >= 8 && 3
+            ])
+            assertRan(stdout, ...expected)
+          })
+        })
+
+        describe('until', function() {
+          it('specific date', async function() {
+            const oneWeekAgo = moment().subtract(1, 'week').toDate().toISOString()
+            const {stdout } = await run(`node bin/migsi output --config=${configFile} --until=${oneWeekAgo}`)
+            assertRan(stdout, 9, 11, 13, 15)
+          })
+
+          it('date with a local timestamp is accepted', async function() {
+            const now = new Date()
+            const yesterday = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() - 1)).toISOString().split('T')[0]
+            const {stdout} = await run(`node bin/migsi output --config=${configFile} --until=${yesterday}`)
+            const expected = _.compact([
+              new Date().getHours() < 2 && 1,
+              new Date().getHours() < 8 && 3,
+              5,
+              7,
+              9,
+              11,
+              13,
+              15
+
+            ])
+            assertRan(stdout, ...expected)
+          })
+        })
+      })
+
+      function assertRan(output, ...expected) {
+        const lines = output.split('\n')
+        for (let i = -1; i < 16; i += 2) {
+          const j = i === -1 ? 'now' : i
+          const included = lines.some(line => line.match(new RegExp(`I am ${j}$`)))
+          if (expected.includes(j)) {
+            assert.ok(included, j + ' was supposed to be included in output')
+          } else {
+            assert.ok(!included, j + ' was not supposed to be included in output')
+          }
+        }
+      }
     })
   })
 

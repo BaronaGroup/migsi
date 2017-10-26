@@ -125,7 +125,7 @@ function output() {
 
   function parseDate(dateStr, dayOffset = 0) {
     if (!dateStr) return undefined
-    const isFullISOString = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{3}.+$^/,
+    const isFullISOString = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{3}.+$/,
       isDuration = /^(\d+)\s*(\w+)$/
 
     if (isFullISOString.test(dateStr)) return new Date(dateStr)
@@ -136,8 +136,9 @@ function output() {
 
     const extractor = /^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d)(?::(\d\d)(?:\.(\d{3})))?)?$/
     const [, year, month, day, hour = 0, minute = 0, second = 0, msec = 0] = dateStr.match(extractor) || []
+
     if (!year) throw new Error('Invalid date format')
-    return new Date(year, month - 1, day + dayOffset, hour, minute, second, msec)
+    return new Date(year, parseInt(month) - 1, parseInt(day) + dayOffset, hour, minute, second, msec)
   }
 }
 
