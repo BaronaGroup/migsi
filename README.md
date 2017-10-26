@@ -18,6 +18,7 @@ There are plenty of migration tools already out there, so what makes migsi worth
   other, and unrelated scripts can be run freely.
 - interface: migsi includes both an API a command line interface allowing for a lot of flexibility
   when it comes to creating and running migrations.
+- automatically storing the output of your migration scripts for later use
   
 ## Requirements
 
@@ -87,6 +88,29 @@ set up database connections and all that, but the actual migrations are skipped.
 This command fails if any scripts are marked as being in development. This can be used in a hook or a test
 to ensure that master branch only contains finished migration scripts, for example.
 
+### output
+
+    npm run migsi -- output
+    
+This command allows you to see the output of past migrations at a later date.
+
+There are a number of options for this command:
+
+- `--name` allows you to specify a single migration script whose output you are interested in
+- `--since` allows you to specify a date or duration as the start of when you're interested in  
+- `--until` allows you to specify a date or duration as the start of until when you're interested in  
+- `--failed` only displays the output for a failed migration, if any
+- `--raw` removes artificial additions to the output, such as the timestamp and the stream in favor of
+  just replaying the original output
+  
+The dates can be specified in a few ways:
+- full ISO date: `2017-10-26-T13:50:00.000Z`
+- local midnight: `2017-10-26`
+- local time `2017-10-26T13:50`; you can include all the time fields of the full ISO format, omitted ones are left at 0
+  
+Durations are entered as an amount immediately or space-separatedly followed by the unit, such as `12h` or `12 hours`.
+`moment.js`, see its [docs](https://momentjs.com/docs/#/durations/creating/) for more details 
+
 ## Configuration
 
 The configuration for migsi should usually be stored in a file called `.migsirc` in your repository root directory. 
@@ -140,6 +164,13 @@ should work as well.
 - `rollbackAll` when set to true makes a migration script failure rollback all of the scripts that were run. If set to
     false only the failed script will be rolled back. Any run scripts that do not support rollback stop the rollback
     process regardless.
+    
+- `disableOutputTracking` if set to true then tracking migration script is disabled. While this is not generally recommended,
+  there are a few reasons why you might want to do so. Tracking the output temporarily overrides the `write` method of
+  `process.stdout` and `process.stderr`, and if you are doing something unusual with
+  them on your own, combining the two effects might not be a good thing. If you expect your migration scripts to output
+  lots of data or confidential data, you also might want to disable the tracking. At this time
+  there is no way to disable output tracking only for individual migration scripts.
   
 #### Storage
 
@@ -269,6 +300,18 @@ Rolled back migrations will be attempted again the next time migrations are to b
 In the hopefully unlikely scenario where rollback throws, the entire rollback process is aborted. The failed migration
 script will still be flagged to be run again, but if a rollback of an already completed migration fails, it is assumed
 that the script has already been and the rollback failed.
+
+### Output tracking
+
+Unless explicitly disabled in the configuration, the output of migration scripts is tracked and stored for later use.
+This includes everything the migration script outputs in the `stdout` and `stderr` of the node process.
+
+**However**, if you spawn child processes and want their output as well, using the usual `inherit` option will not work,
+instead you need to do something like 
+    
+    const child = child_process.spawn('ls', {stdio: 'pipe'})
+    child.stdout.pipe(process.stdout)
+    child.stderr.pipe(process.stderr) 
 
 ## Creating migration templates
 

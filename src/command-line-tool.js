@@ -6,14 +6,18 @@ const core = require('./core'),
   path = require('path'),
   inquirer = require('inquirer'),
   _ = require('lodash'),
-  fs = require('fs')
+  fs = require('fs'),
+  {outputProcessor} = require('./output-tracker'),
+  cliColor = require('cli-color'),
+  moment = require('moment')
 
 const commands = {
   'list': list(),
   'create': create(),
   'run': run(),
   'ensure-no-development-scripts': ensureNoDevelopmentScripts(),
-  'create-template': createTemplate()
+  'create-template': createTemplate(),
+  'output': output()
 }
 
 async function runApp() {
@@ -62,6 +66,79 @@ function list() {
         logger.log(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
       }
     }
+  }
+}
+
+function output() {
+  return {
+    options: [
+      ['name|n=s', 'Name of the migration script whose output you want'],
+      ['since|s=s', 'Date/datetime (ISO format only) for when to start listing output from'],
+      ['until|u=s', 'Date/datetime (ISO format only) for when to stop listing output'],
+      ['failed|f', 'List output for the latest failed migration, if any'],
+      ['raw|r', 'Do not add timestamps and streams to output']
+    ],
+    action: async ({name, since: rawSince, until: rawUntil, failed, raw}) => {
+      const since = parseDate(rawSince),
+        until = parseDate(rawUntil, 1)
+
+      const migrations = (await core.filterMigrations({name, since, until, failed}))
+        .filter(m => m.hasBeenRun || m.failedToRun)
+
+      for (let migration of migrations) {
+        const linearRunOutput = outputProcessor.makeLinear(migration, 'run')
+        console.log(cliColor.xterm(33)('Migration: ' + migration.friendlyName))
+        if (linearRunOutput.length) {
+          console.log(cliColor.xterm(129)('Run output'))
+          for (let line of linearRunOutput) {
+            process.stdout.write(outputLine(line))
+          }
+          console.log('')
+        }
+        const linearRollbackOutput = outputProcessor.makeLinear(migration, 'rollback')
+        if (linearRollbackOutput.length) {
+          console.log(cliColor.xterm(214)('Rolled back'))
+          for (let line of linearRollbackOutput) {
+            process.stdout.write(outputLine(line))
+          }
+          console.log('')
+        }
+        const exception = migration.output.exception
+        if (exception) {
+          console.log(cliColor.xterm(9)('Exception: ' + exception.message))
+          if (exception.stack) {
+            console.log(exception.stack)
+          }
+          console.log('')
+        }
+      }
+
+      function outputLine(line) {
+        if (raw) return line.data
+        const lastChar = line.data[line.data.length - 1]
+        const terminator = lastChar === '\n' || lastChar === '\r' ? '' : '\n'
+        const streamColor = line.stream === 'stdout' ? 78 : 161
+        return [cliColor.xterm(72)(new Date(line.timestamp).toISOString()), ' ', cliColor.xterm(streamColor)(line.stream), ' ', line.data, terminator].join('')
+      }
+    }
+  }
+
+  function parseDate(dateStr, dayOffset = 0) {
+    if (!dateStr) return undefined
+    const isFullISOString = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{3}.+$/,
+      isDuration = /^(\d+)\s*(\w+)$/
+
+    if (isFullISOString.test(dateStr)) return new Date(dateStr)
+    if (isDuration.test(dateStr)) {
+      const [, amount, unit] = dateStr.match(isDuration)
+      return moment().subtract(amount, unit).toDate()
+    }
+
+    const extractor = /^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d)(?::(\d\d)(?:\.(\d{3})))?)?$/
+    const [, year, month, day, hour = 0, minute = 0, second = 0, msec = 0] = dateStr.match(extractor) || []
+
+    if (!year) throw new Error('Invalid date format')
+    return new Date(year, parseInt(month) - 1, parseInt(day) + dayOffset, hour, minute, second, msec)
   }
 }
 
