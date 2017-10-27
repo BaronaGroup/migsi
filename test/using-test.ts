@@ -8,7 +8,7 @@ export const addToSequence = (...args : string[]) => {
 }
 
 
-exporst const fusing(id : string) {
+export const using = (id : string) => {
   return {
     async open() {
       sequence.push('+' + id)

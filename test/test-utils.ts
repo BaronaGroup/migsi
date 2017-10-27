@@ -18,11 +18,16 @@ export const wipeTestModuleCache = function() {
 }
 
 export const wipeWorkspace = function() {
-  emptyDirectory(__dirname + '/../test-workspace')
+  const workspacePath = __dirname + '/../test-workspace';
+  emptyDirectory(workspacePath)
   wipeTestModuleCache()
+  if (!fs.existsSync(workspacePath)) {
+    fs.mkdirSync(workspacePath)
+  }
 }
 
 function emptyDirectory(directory : string) {
+  if (!fs.existsSync(directory)) return
   const files = fs.readdirSync(directory)
   for (let file of files) {
     if (file === '.gitplaceholder') continue
