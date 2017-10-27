@@ -1,7 +1,8 @@
-const {MongoClient} = require('mongodb'),
-  _ = require('lodash')
+import {MongoClient, Db} from 'mongodb'
+import * as _ from 'lodash'
 
-module.exports = _.memoize(function(mongoURL) {
+
+module.exports = _.memoize(function(mongoURL : string) {
   return {
     setup() {
       return {
@@ -9,7 +10,7 @@ module.exports = _.memoize(function(mongoURL) {
           return MongoClient.connect(mongoURL)
         },
 
-        close(mongo) {
+        close(mongo : Db) {
           return mongo.close()
         }
       }

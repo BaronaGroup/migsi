@@ -1,1 +1,1 @@
-process.env.MIGSI_QUIET = '1'
+process.env.MIGSI_QUIET = '1';

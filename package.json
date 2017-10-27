@@ -8,18 +8,23 @@
     "url": "BaronaGroup/migsi"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-plugin-transform-async-to-generator": "^6.24.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.6.0",
+    "@types/chai": "^4.0.4",
+    "@types/cli-color": "^0.3.29",
+    "@types/inquirer": "0.0.35",
+    "@types/lodash": "^4.14.80",
+    "@types/mocha": "^2.2.44",
+    "@types/mongodb": "^2.2.15",
+    "@types/node": "^8.0.47",
     "background-eslint-hook": "1.0.0",
-    "chai": "^4.0.2",
+    "chai": "^4.1.2",
     "eslint": "^4.0.0",
     "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.0",
+    "gulp-typescript": "^3.2.3",
     "mocha": "^3.4.2",
     "npm-release": "^1.0.0",
-    "post-commit": "0.0.1"
+    "post-commit": "0.0.1",
+    "source-map-support": "^0.5.0",
+    "typescript": "^2.5.3"
   },
   "license": "MIT",
   "author": {
@@ -28,9 +33,13 @@
   "scripts": {
     "eslint": "eslint . --max-warnings=0",
     "background-eslint-hook": "background-eslint-hook",
-    "test": "mocha $*",
-    "build-es5": "gulp",
-    "prepare": "npm run build-es5",
+    "test": "npm run build-test && mocha test-build/*.js",
+    "build-es2017": "gulp es2017",
+    "build-es2016": "gulp es2016",
+    "build-ts": "npm run build",
+    "build": "gulp",
+    "build-test": "gulp build-tests",
+    "prepare": "npm run build-ts",
     "release": "npm test && npm-release"
   },
   "post-commit": [
