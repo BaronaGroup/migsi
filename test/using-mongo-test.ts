@@ -1,10 +1,13 @@
+import {wipeWorkspace, runMigrations, configure} from './test-utils'
+import {assert as chaiAssert} from 'chai'
+import {MongoClient, Db} from 'mongodb'
+import {delay} from '../src/utils'
+import * as fs from 'fs'
+import * as path from 'path'
+
+const assert = chaiAssert // doing this so that other references to assert don't fail
+
 describe('mongo-storage-test', function () {
-  const {wipeWorkspace, runMigrations, configure} = require('./test-utils'),
-    {assert} = require('chai'),
-    {MongoClient} = require('mongodb'),
-    {delay} = require('../src/utils'),
-    fs = require('fs'),
-    path = require('path')
 
   const defaultMongoURL = 'mongodb://localhost/migsi-test'
   const mongoURL = process.env.MIGSI_MONGO_URL || defaultMongoURL
@@ -40,7 +43,7 @@ describe('mongo-storage-test', function () {
       }
       configure({
         using: {
-          mongodb: require('../using/mongodb')(mongoURL)
+          mongodb: require('../src/using/mongodb')(mongoURL)
         }
       })
     })
@@ -50,11 +53,11 @@ describe('mongo-storage-test', function () {
     it('works', async function () {
       if (!enabled) return this.skip()
 
-      async function run(mongodb, collectionName) {
+      async function run(mongodb : Db, collectionName : string) {
         const collection = mongodb.collection(collectionName)
-        assert.equal(await collection.count(), 0)
+        assert.equal(await collection.count({}), 0)
         await collection.insert({color: 'yellow'})
-        assert.equal(await collection.count(), 1)
+        assert.equal(await collection.count({}), 1)
       }
 
       const migrationBody = `
@@ -69,7 +72,7 @@ describe('mongo-storage-test', function () {
       await runMigrations()
 
       const conn = await MongoClient.connect(mongoURL)
-      assert.equal(await conn.collection(collectionName).count(), 1)
+      assert.equal(await conn.collection(collectionName).count({}), 1)
       await conn.close()
     })
   })

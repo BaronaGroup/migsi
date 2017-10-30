@@ -1,36 +1,36 @@
-const path = require('path'),
-  fs = require('fs'),
-  cliColor = require('cli-color'),
-  config = require('./config'),
-  {findMigrations} = require('./migration-loader'),
-  _ = require('lodash'),
-  SupportManager = require('./support-manager'),
-  logger = require('./logger'),
-  {trackOutput} = require('./output-tracker')
+import * as path from 'path'
+import * as fs from 'fs'
+import * as cliColor from 'cli-color'
+import * as _ from 'lodash'
+import {config, getDir, setupConfig, findAndLoadConfig} from './config'
+import {findMigrations} from './migration-loader'
+import SupportManager from './support-manager'
+import logger from './logger'
+import {trackOutput} from './output-tracker'
 
-const loadAllMigrations = exports.loadAllMigrations = async function () {
+export const loadAllMigrations = async function () {
   return await findMigrations()
 }
 
-exports.filterMigrations = async function({name, since, until, failed}) {
+export const filterMigrations = async function ({name, since, until, failed}: MigrationFilters) {
   const migrations = await findMigrations()
   return migrations.filter(migration => {
     if (name && migration.friendlyName !== name && migration.migsiName !== name) return false
-    if (since && (!migration.hasBeenRun || new Date(migration.runDate) < since)) return false
-    if (until && (!migration.hasBeenRun || new Date(migration.runDate) >= until)) return false
+    if (since && (!migration.hasBeenRun || asDate(migration.runDate) < since)) return false
+    if (until && (!migration.hasBeenRun || asDate(migration.runDate) >= until)) return false
     if (failed && !migration.failedToRun) return false
     return true
   })
 }
 
-exports.createMigrationScript = async function (friendlyName, templateName = 'default') {
+export const createMigrationScript = async function (friendlyName: string, templateName = 'default') {
   const migPath = friendlyName.split('/')
   const plainName = _.last(migPath)
   const relativePath = migPath.slice(0, -1)
-  const filename = (await getFilenamePrefix()) + toFilename(plainName) + '.migsi.js'
+  const filename = (await getFilenamePrefix()) + toFilename(<string>plainName) + '.migsi.js'
   const templateImpl = loadTemplate(templateName)
   const updatedTemplate = await updateTemplate(templateImpl, {friendlyName})
-  const ffn = path.join(config.getDir('migrationDir'), ...relativePath, filename)
+  const ffn = path.join(getDir("migrationDir"), ...relativePath, filename)
 
   if (fs.existsSync(ffn)) {
     throw new Error(ffn + 'already exists')
@@ -40,45 +40,45 @@ exports.createMigrationScript = async function (friendlyName, templateName = 'de
   return ffn
 }
 
-function ensureDirExists(path) {
+function ensureDirExists(path: string) {
   if (!fs.existsSync(path)) {
     ensureDirExists(getParent(path))
     fs.mkdirSync(path)
   }
 
-  function getParent(path) {
+  function getParent(path: string) {
     return path.split(/[/\\]/g).slice(0, -1).join(require('path').sep)
   }
 }
 
-async function getFilenamePrefix(opts) {
-  if (config.prefixAlgorithm) return await config.prefixAlgorithm(opts)
+async function getFilenamePrefix() {
+  if (config.prefixAlgorithm) return await config.prefixAlgorithm()
   return getFilenameTimestamp() + '-'
 }
 
 function getFilenameTimestamp() {
   const now = new Date()
-  return pad(now.getFullYear(), 4) + pad(now.getMonth() + 1) + pad(now.getDate()) + 'T' + pad(now.getHours() + pad(now.getMinutes()))
+  return pad(now.getFullYear(), 4) + pad(now.getMonth() + 1) + pad(now.getDate()) + 'T' + pad(now.getHours()) + pad(now.getMinutes())
 
-  function pad(input, to = 2) {
+  function pad(input: number, to = 2) {
     const str = input.toString()
     if (str.length >= to) return str
     return ('0000' + str).substr(-to)
   }
 }
 
-function toFilename(raw) {
+function toFilename(raw: string) {
   const invalidChars = /[^A-Za-z0-9-_]+/g
   return raw.replace(invalidChars, '_')
 }
 
-function loadTemplate(template) {
+function loadTemplate(template: string) {
   const templateFn = findTemplate(template)
   return fs.readFileSync(templateFn, 'UTF-8')
 }
 
-function findTemplate(templateName) {
-  const templateDir = config.getDir('templateDir')
+function findTemplate(templateName: string) {
+  const templateDir = getDir("templateDir")
   const candidates = _.compact([
     templateDir && path.join(templateDir, templateName + '.template.js'),
     templateDir && path.join(templateDir, templateName + '.js'),
@@ -93,13 +93,14 @@ function findTemplate(templateName) {
   throw new Error('Template not found: ' + templateName)
 }
 
-async function updateTemplate(rawTemplate, variables) {
+async function updateTemplate(rawTemplate: string, variables: TemplateVariables) {
   return rawTemplate.replace(/\[\[FRIENDLY_NAME\]\]/g, variables.friendlyName)
     .replace(/\[\[IMPLICIT_DEPENDENCY\]\]/g, await getImplicitDependencyName())
     .replace(/\n?.+\/\/.+migsi-template-exclude-line/g, '')
 }
 
-exports.runMigrations = async function({production, confirmation, dryRun = false} = {}) {
+export const runMigrations = async function ({production, confirmation, dryRun = false}: RunOptions = {}) {
+  if (!config.storage) throw new Error('No storage set up')
   let migrations = await loadAllMigrations()
   if (production) {
     const firstNonProduction = migrations.find(migr => migr.inDevelopment)
@@ -112,12 +113,12 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
       }
       migrations = migrations.slice(0, index)
       logger.log(`Excluding development mode migration scripts:\n${excludedDev.map(mig => mig.migsiName).join('\n')}`)
-      const excludedProd = excluded.filter(mig => mig.production)
+      const excludedProd = excluded.filter(mig => !mig.inDevelopment)
       logger.log(`Excluding production mode migration scripts dependant on development scripts:\n${excludedProd.map(mig => mig.migsiName).join('\n')}`)
     }
   }
 
-  const toBeRun = migrations.filter(m => m.toBeRun)
+  const toBeRun: RunnableMigration[] = <RunnableMigration[]>migrations.filter(m => m.toBeRun)
 
   if (!toBeRun.length) {
     logger.log('No migrations to be run.')
@@ -133,6 +134,7 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
 
   for (let migration of toBeRun) {
     const before = new Date()
+    migration.output = {}
     try {
       logger.write(cliColor.xterm(33)('Running: '))
       logger.log(migration.migsiName)
@@ -142,7 +144,6 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
       } else {
         rollbackable = []
       }
-      migration.output = {}
       if (!dryRun) {
         await trackOutput(migration, 'run', () => migration.run(...supportObjs))
       }
@@ -161,7 +162,7 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
         await config.storage.updateStatus(migration)
       }
 
-      await supportManager.finish(migration)
+      await supportManager.finish()
     } catch (err) {
       migration.failedToRun = true
       migration.runDate = null
@@ -181,7 +182,8 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
   }
   return toBeRun
 
-  async function rollback(rollbackable, toBeRun) {
+  async function rollback(rollbackable: RunnableMigration[], toBeRun: RunnableMigration[]) {
+    if (!config.storage) throw new Error('Storage not set up')
     if (!rollbackable.length) {
       logger.log('Rollback is not supported by the failed migration script.')
       return
@@ -190,7 +192,7 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
     if (rollbackAll && toBeRun[rollbackable.length - 1] !== rollbackable[rollbackable.length - 1]) {
       logger.warn('Not all run migration scripts support rollback; only rolling back the last ' + rollbackable.length + ' migration scripts')
     }
-    const toRollback = rollbackAll ? _.reverse(rollbackable) : [_.last(rollbackable)]
+    const toRollback = rollbackAll ? _.reverse(rollbackable) : [<RunnableMigration>_.last(rollbackable)]
 
     const supportManager = new SupportManager(toRollback)
 
@@ -214,9 +216,10 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
         logger.write(cliColor.xterm(40)('Rollback success: '))
         logger.log(migration.migsiName + ', duration ' + duration)
 
-        await supportManager.finish(migration)
+        await supportManager.finish()
 
       } catch (err) {
+        if (!migration.output) migration.output = {}
         migration.output.rollbackException = exceptionToOutput(err)
         await config.storage.updateStatus(migration)
         await supportManager.destroy()
@@ -228,7 +231,7 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
 
   }
 
-  async function confirmMigrations(toBeRun) {
+  async function confirmMigrations(toBeRun: RunnableMigration[]) {
     let confirmResponse
     if (confirmation) {
       if (!(confirmResponse = await confirmation(toBeRun))) {
@@ -245,15 +248,15 @@ exports.runMigrations = async function({production, confirmation, dryRun = false
   }
 }
 
-function exceptionToOutput(err) {
+function exceptionToOutput(err: Error) {
   return {
     message: err.message,
     stack: (err.stack || '').toString()
   }
 }
 
-exports.createTemplate = async function (name) {
-  const dir = config.getDir('templateDir')
+export const createTemplate = async function (name: string) {
+  const dir = getDir('templateDir')
   if (!dir) throw new Error('You do not have a templateDir in your config')
   const filename = path.join(dir, `${toFilename(name)}.template.js`)
   if (fs.existsSync(filename)) throw new Error(filename + ' already exists')
@@ -265,16 +268,25 @@ exports.createTemplate = async function (name) {
 
 async function getImplicitDependencyName() {
   const migrations = await findMigrations()
-  return (_.last(migrations) || {}).migsiName || ''
+  if (!migrations.length) return ''
+  return migrations[migrations.length - 1].migsiName
 }
 
-exports.configure = function (configData) {
-  if (_.isString(configData)) {
+export const configure = function (configData: Config | string | undefined) {
+  if (typeof configData === 'string') {
     const configuration = require(configData)
-    config.setupConfig(configuration.default || configuration)
+    setupConfig(configuration.default || configuration)
   } else if (_.isObject(configData)) {
-    config.setupConfig(configData)
+    setupConfig(<Config>configData)
   } else {
-    config.findAndLoadConfig()
+    findAndLoadConfig()
   }
+}
+
+function asDate(dateRepr: Date | string | null): Date {
+  if (!dateRepr) throw new Error('Internal error: date expected')
+  if (dateRepr instanceof Date) {
+    return dateRepr
+  }
+  return new Date(dateRepr)
 }

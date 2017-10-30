@@ -1,5 +1,3 @@
 #! /usr/bin/env node
-const requireBest = require('../require-best')
-
-requireBest('command-line-tool')
+require('../require-best')('command-line-tool')
 

@@ -1,9 +1,8 @@
-const {wipeWorkspace, configure, runMigrations, expectFailure} = require('./test-utils'),
-  core = require('../src/core'),
-  fs = require('fs'),
-  {assert} = require('chai'),
-  path = require('path')
-
+import {wipeWorkspace, configure, runMigrations, expectFailure} from './test-utils'
+import * as core from '../src/core'
+import * as fs from 'fs'
+import {assert} from 'chai'
+import * as path from 'path'
 
 describe('create-migration-test.js', function () {
   before(function () {

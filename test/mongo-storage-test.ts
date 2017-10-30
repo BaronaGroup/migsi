@@ -1,9 +1,11 @@
+import {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} from './test-utils'
+import mongoStorage, {defaultCollectionName} from '../src/storage/mongo'
+import {assert} from 'chai'
+import {MongoClient, Db} from 'mongodb'
+import {delay} from '../src/utils'
+
+
 describe('mongo-storage-test', function () {
-  const {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} = require('./test-utils'),
-    mongoStorage = require('../src/storage/mongo'),
-    {assert} = require('chai'),
-    {MongoClient} = require('mongodb'),
-    {delay} = require('../src/utils')
 
   const defaultMongoURL = 'mongodb://localhost/migsi-test'
   const mongoURL = process.env.MIGSI_MONGO_URL || defaultMongoURL
@@ -26,7 +28,7 @@ describe('mongo-storage-test', function () {
         try {
           await Promise.all([
             connection.collection(customCollectionName).remove({}),
-            connection.collection(mongoStorage.defaultCollectionName).remove({}),
+            connection.collection(defaultCollectionName).remove({}),
           ])
           await delay(200) // another connection might not see the changes immediately, so we delay a bit here
           enabled = true
@@ -49,7 +51,7 @@ describe('mongo-storage-test', function () {
 
     it('throws without an URL', async function () {
       await expectFailure(async function () {
-        configure({storage: mongoStorage()})
+        configure({storage: mongoStorage('')})
       }())
     })
 

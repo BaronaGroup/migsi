@@ -1,4 +1,4 @@
-const {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} = require('./test-utils')
+import {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} from './test-utils'
 
 describe('rollback-test', function () {
   beforeEach(wipeWorkspace)
@@ -68,13 +68,14 @@ describe('rollback-test', function () {
         dependencies: ['b'],
         rollback: true,
         run: function() {
-          if (global.fail) throw new Error('failure')
+          if (eval('global.fail')) throw new Error('failure') // eslint-disable-line no-eval
           return this.__run()
         }
       })
-      global.fail = true
+      const g = <any>global
+      g.fail = true
       await expectFailure(runMigrations())
-      global.fail = false
+      g.fail = false
       await runMigrations()
       assertMigrations(['a', 'b', 'rollback:c', 'rollback:b', 'b', 'c'])
     })
@@ -104,16 +105,17 @@ describe('rollback-test', function () {
     })
 
     it('rolled back migrations are attempted again on the next run', async function () {
-      global.fail = true
+      const g = <any>global
+      g.fail = true
       createMigration('a', {
         rollback: true, run: function () {
-          if (global.fail) throw new Error('failure')
+          if (eval('global.fail')) throw new Error('failure') // eslint-disable-line no-eval
           return this.__run()
         }
       })
       await expectFailure(runMigrations())
       await expectFailure(runMigrations())
-      global.fail = false
+      g.fail = false
       await runMigrations()
       assertMigrations(['rollback:a', 'rollback:a', 'a'])
     })

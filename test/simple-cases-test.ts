@@ -1,4 +1,4 @@
-const {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure } = require('./test-utils')
+import {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure } from './test-utils'
 
 describe('simple-cases', function() {
   before(configure)

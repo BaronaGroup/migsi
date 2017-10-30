@@ -5,9 +5,10 @@
     "es6": true,
     "node": true
   },
+  "parser": "typescript-eslint-parser",
   "parserOptions": {
     "ecmaVersion": 2017,
-    "sourceType": "script",
+    "sourceType": "module",
     "ecmaFeatures": {
       "modules": "false"
     }
@@ -15,7 +16,6 @@
   "rules": {
     "no-unexpected-multiline": 2,
     "semi": [1, "never"],
-    "no-unused-vars": [1, { "vars": "all", "args": "none" }],
     "no-var": 1,
     "eqeqeq": 1,
     "dot-notation": 1,
@@ -26,7 +26,11 @@
     "strict": 0,
     "no-multi-spaces": 1,
     "no-console": 0,
-    "no-case-declarations": 0
+    "no-case-declarations": 0,
+    "no-undef": 0,
+    "no-unused-vars": 0,
+    "no-useless-constructor": 0,
+    "space-infix-ops": 0
   },
   "globals": {
     "__filename": true

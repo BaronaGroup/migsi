@@ -1,4 +1,4 @@
-const {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} = require('./test-utils')
+import {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} from './test-utils'
 
 describe('dependencies-test', function () {
   before(function () {

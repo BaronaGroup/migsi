@@ -1,6 +1,6 @@
-const {wipeWorkspace, createMigration, assertMigrations, configure, expectFailure} = require('./test-utils'),
-  {runMigrations} = require('../src/core'),
-  {assert} = require('chai')
+import {wipeWorkspace, createMigration, assertMigrations, configure, expectFailure} from './test-utils'
+import {runMigrations} from '../src/core'
+import {assert} from 'chai'
 
 describe('confirmation-test', function () {
   beforeEach(wipeWorkspace)
@@ -67,9 +67,12 @@ describe('confirmation-test', function () {
     })
 
 
-    it('can access migrations', async function() {
+    it('can access migrations', async function () {
       createMigration('a')
-      await runMigrations({confirmation: migrations => assert.equal(migrations[0].friendlyName, 'a')})
+      await runMigrations({confirmation: migrations => {
+        assert.equal(migrations[0].friendlyName, 'a')
+        return true
+      }})
     })
   })
 
@@ -133,22 +136,26 @@ describe('confirmation-test', function () {
       assertMigrations(['a'])
     })
 
-    it('can access migrations', async function() {
+    it('can access migrations', async function () {
       createMigration('a')
-      configure({confirmation: migrations => assert.equal(migrations[0].friendlyName, 'a')})
+      configure({confirmation: (migrations : Migration[]) => {
+        assert.equal(migrations[0].friendlyName, 'a')
+        return true
+      }})
       await runMigrations()
     })
   })
 
   describe('combination confirmation', function () {
     describe('either confirmation can block migrations', function () {
-      let toPass
+      interface TP { conf: boolean, runtime: boolean, [index: string]: boolean}
+      let toPass : TP
       const runtimeConfirm = confirmer('runtime')
       before(function () {
         configure(confirmer('conf'))
       })
 
-      function confirmer(key) {
+      function confirmer(key : string) {
         return {confirmation: () => toPass[key]}
       }
 
@@ -202,7 +209,11 @@ describe('confirmation-test', function () {
 
       it('runtime', async function () {
         createMigration('a')
-        await expectFailure(runMigrations({confirmation: () => {throw new Error('Runtime')}}), err => assert.equal(err.message, 'Runtime'))
+        await expectFailure(runMigrations({
+          confirmation: () => {
+            throw new Error('Runtime')
+          }
+        }), err => assert.equal(err.message, 'Runtime'))
       })
 
       it('config', async function () {
@@ -211,14 +222,16 @@ describe('confirmation-test', function () {
       })
     })
 
-    it('config confirmation is given the return value from run-time confirmation', async function() {
+    it('config confirmation is given the return value from run-time confirmation', async function () {
       const value = 'test value'
       createMigration('a')
       let confirmed = false
-      configure({confirmation: (migrations, msg) => {
-        assert.equal(msg, value)
-        confirmed = true
-      }})
+      configure({
+        confirmation: (migrations: Migration[], msg : string) => {
+          assert.equal(msg, value)
+          confirmed = true
+        }
+      })
       await runMigrations({confirmation: () => value})
       assert.ok(confirmed)
     })

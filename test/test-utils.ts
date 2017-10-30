@@ -1,26 +1,33 @@
-const fs = require('fs'),
-  path = require('path'),
-  core = require('../src/core'),
-  {assert} = require('chai'),
-  config = require('../src/config'),
-  _ = require('lodash')
+
+import * as fs from 'fs'
+import * as path from 'path'
+import * as core from '../src/core'
+import {assert} from 'chai'
+import {setupConfig} from '../src/config'
+import * as _ from 'lodash'
+import jsonFileStorage from '../src/storage/json-file'
 
 const testResultFile = __dirname + '/../test-workspace/output.json'
 const isInTestWorkspace = /test-workspace/
 
-const wipeTestModuleCache = exports.wipeTestModuleCache = function() {
+export const wipeTestModuleCache = function() {
   const testModules = Object.keys(require.cache).filter(key => isInTestWorkspace.test(key))
   for (let testModuleName of testModules) {
     delete require.cache[testModuleName]
   }
 }
 
-exports.wipeWorkspace = function() {
-  emptyDirectory(__dirname + '/../test-workspace')
+export const wipeWorkspace = function() {
+  const workspacePath = __dirname + '/../test-workspace'
+  emptyDirectory(workspacePath)
   wipeTestModuleCache()
+  if (!fs.existsSync(workspacePath)) {
+    fs.mkdirSync(workspacePath)
+  }
 }
 
-function emptyDirectory(directory) {
+function emptyDirectory(directory : string) {
+  if (!fs.existsSync(directory)) return
   const files = fs.readdirSync(directory)
   for (let file of files) {
     if (file === '.gitplaceholder') continue
@@ -34,18 +41,18 @@ function emptyDirectory(directory) {
   }
 }
 
-exports.configure = function(overrides = {}) {
-  const storage = require('../src/storage/json-file')(__dirname + '/../test-workspace/status.json')
+export const configure = function(overrides = {}) {
+  const storage = jsonFileStorage(__dirname + '/../test-workspace/status.json')
   const configObject = Object.assign({
     storage: storage,
     migrationDir: __dirname + '/../test-workspace',
     prefixAlgorithm: () => ''
   }, overrides)
 
-  config.setupConfig(configObject)
+  setupConfig(configObject)
 }
 
-exports.createMigration = function(name, opts = {}) {
+export const createMigration = function(name : string, opts : any = {}) {
   opts.friendlyName = name
   let fullFilename = `${__dirname}/../test-workspace/${name}.migsi.js`
   const defaultRun = (async function() {
@@ -75,17 +82,17 @@ module.exports = Object.assign({
   return fullFilename
 }
 
-exports.runMigrations = async function(production, extraOpts) {
+export const runMigrations = async function(production: boolean = false, extraOpts: any = {}) {
   return core.runMigrations(Object.assign({production}, extraOpts))
 }
 
-exports.runImpl = testName => {
+export const runImpl = (testName : string) => {
   const results = loadTestResults()
   results.push(testName)
   fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'UTF-8')
 }
 
-exports.rollbackImpl = testName => {
+export const rollbackImpl = (testName : string) => {
   const results = loadTestResults()
   results.push("rollback:" + testName)
   fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'UTF-8')
@@ -96,17 +103,17 @@ function loadTestResults() {
   return JSON.parse(fs.readFileSync(testResultFile, 'UTF-8'))
 }
 
-exports.assertMigrations = function(expected) {
+export const assertMigrations = function(expected : string[]) {
   const data = loadTestResults()
   assert.deepEqual(data, expected)
 }
 
-exports.replaceInFile = function(filename, regexp, replacement) {
+export const replaceInFile = function(filename : string, regexp: RegExp | string, replacement: string) {
   const data = fs.readFileSync(filename, 'UTF-8')
   fs.writeFileSync(filename, data.replace(regexp, replacement), 'UTF-8')
 }
 
-exports.expectFailure = function(promise, failureAssert) {
+export const expectFailure = function(promise : Promise<any>, failureAssert? : (error : Error) => void) {
   return promise.then(function() {
     throw new Error('Expected a failure')
   }, function(err) {

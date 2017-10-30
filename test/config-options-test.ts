@@ -1,8 +1,18 @@
-const {wipeWorkspace, configure, runMigrations, expectFailure, assertMigrations, createMigration, replaceInFile, wipeTestModuleCache} = require('./test-utils'),
-  core = require('../src/core'),
-  fs = require('fs'),
-  {assert} = require('chai'),
-  path = require('path')
+import {
+  wipeWorkspace,
+  configure,
+  runMigrations,
+  expectFailure,
+  assertMigrations,
+  createMigration,
+  replaceInFile,
+  wipeTestModuleCache
+} from './test-utils'
+
+import * as core from '../src/core'
+import * as fs from 'fs'
+import {assert} from 'chai'
+import * as path from 'path'
 
 describe('config-options-test', function () {
   beforeEach(wipeWorkspace)
@@ -60,7 +70,7 @@ describe('config-options-test', function () {
 
   describe('storage', function () {
     it('uses provided storage', async function () {
-      const stored = []
+      const stored : string[] = []
       configure({
         storage: {
           async loadPastMigrations() {
@@ -71,7 +81,7 @@ describe('config-options-test', function () {
               }
             ]
           },
-          async updateStatus(migration) {
+          async updateStatus(migration : Migration) {
             stored.push(migration.migsiName)
           }
         }
@@ -107,20 +117,20 @@ describe('config-options-test', function () {
   })
 
   describe('prefixAlgorithm ', function () {
-    it('simple prefix', async function() {
+    it('simple prefix', async function () {
       configure({prefixAlgorithm: () => 'howdy'})
       await core.createMigrationScript('test')
       assert.ok(fs.existsSync(path.join(__dirname, '../test-workspace/howdytest.migsi.js')))
     })
 
-    it('with a path', async function() {
+    it('with a path', async function () {
       configure({prefixAlgorithm: () => 'dir/name/'})
       await core.createMigrationScript('test')
       assert.ok(fs.existsSync(path.join(__dirname, '../test-workspace/dir/name/test.migsi.js')))
     })
   })
 
-  describe('confirmation', function() {
+  describe('confirmation', function () {
     // The tests are implemented in confirmation-test.js
   })
 })

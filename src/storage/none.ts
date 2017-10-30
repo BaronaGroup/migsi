@@ -3,13 +3,13 @@ const api = {
   updateStatus
 }
 
-module.exports = api
+export default api
 
 function loadPastMigrations() {
   return []
 }
 
-async function updateStatus(migration) {
+async function updateStatus(migration : Migration) {
   throw new Error('Storage "none" does not support running migrations.')
 }
 

@@ -1,14 +1,14 @@
-const {wipeWorkspace, configure, runMigrations, replaceInFile, createMigration} = require('./test-utils'),
-  {assert} = require('chai')
+import {wipeWorkspace, configure, runMigrations, replaceInFile, createMigration} from './test-utils'
+  import {assert} from 'chai'
 
-let sequence = []
+let sequence : string[] = []
 
-const addToSequence = exports.addToSequence = (...args) => {
+export const addToSequence = (...args : string[]) => {
   sequence.push(args.join(' '))
 }
 
 
-function using(id) {
+export const using = (id : string) => {
   return {
     async open() {
       sequence.push('+' + id)
@@ -19,8 +19,6 @@ function using(id) {
     }
   }
 }
-
-exports.using = using
 
 describe('using-test', function () {
 
@@ -173,7 +171,7 @@ describe('using-test', function () {
 })
 
 
-function createUsingMigration(name, args) {
+function createUsingMigration(name : string, args : object) {
   const withWrapper = Object.assign({},
     args,
 

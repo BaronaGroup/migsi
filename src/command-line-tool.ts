@@ -1,31 +1,84 @@
+import * as core from './core'
+import * as nodeGetoptLong from 'node-getopt-long'
+import {config, getDir, setupConfig, findAndLoadConfig} from './config'
+import logger from './logger'
+import * as path from 'path'
+import * as inquirer from 'inquirer'
+import * as _ from 'lodash'
+import * as fs from 'fs'
+import {outputProcessor} from './output-tracker'
+import * as cliColor from 'cli-color'
+import * as moment from 'moment'
 
-const core = require('./core'),
-  nodeGetoptLong = require('node-getopt-long'),
-  config = require('./config'),
-  logger = require('./logger'),
-  path = require('path'),
-  inquirer = require('inquirer'),
-  _ = require('lodash'),
-  fs = require('fs'),
-  {outputProcessor} = require('./output-tracker'),
-  cliColor = require('cli-color'),
-  moment = require('moment')
+interface Options {
+  config?: string
+}
 
-const commands = {
-  'list': list(),
-  'create': create(),
-  'run': run(),
-  'ensure-no-development-scripts': ensureNoDevelopmentScripts(),
-  'create-template': createTemplate(),
-  'output': output()
+type NoOptions = Options
+
+interface Command {
+  options: nodeGetoptLong.Option[],
+  action: (args: Options) => Promise<void>
+}
+
+interface OutputOptions extends Options {
+  name?: string,
+  since?: string
+  until?: string
+  failed?: boolean
+  raw?: boolean
+}
+
+interface RunOptions extends Options {
+  //{production = false, yes: confirmed = false, 'dry-run': dryRun}
+  production?: boolean,
+  yes?: boolean,
+  'dry-run'?: boolean
+}
+
+interface CreateTemplateOptions {
+  name?: string
+}
+
+interface CreateOptions {
+  friendlyName?: string
+  template?: string
+}
+
+interface TemplateInfo {
+  filename?: string
+  refName: string
+  name?: string
+}
+
+interface CommandList {
+  [index: string]: Command
+}
+
+
+declare module "inquirer" {
+  // Built in, but not included in the provided type definitions
+  interface Question {
+    prefix?: string,
+    suffix?: string
+  }
+}
+
+const commands: CommandList = {
+  'list': <Command>list(),
+  'create': <Command>create(),
+  'run': <Command>run(),
+  'ensure-no-development-scripts': <Command>ensureNoDevelopmentScripts(),
+  'create-template': <Command>createTemplate(),
+  'output': <Command>output()
 }
 
 async function runApp() {
   const cmdLine = parseCommandLine()
   if (cmdLine.options.config) {
-    config.setupConfig(require(cmdLine.options.config))
+    setupConfig(require(cmdLine.options.config))
   } else {
-    config.findAndLoadConfig()
+    findAndLoadConfig()
   }
   await cmdLine.command.action(cmdLine.options)
 }
@@ -47,7 +100,7 @@ function parseCommandLine() {
     'config|conf|c=s', 'Configuration file'
   ]]
 
-  const options = nodeGetoptLong.options((cmdImpl.options || []).concat(defaultOptions), {
+  const options = <Options>nodeGetoptLong.options((cmdImpl.options || []).concat(defaultOptions), {
     name: 'migsi'
   })
 
@@ -60,7 +113,7 @@ function parseCommandLine() {
 function list() {
   return {
     options: [],
-    action: async function (options) {
+    action: async function (options: NoOptions) {
       const migrations = await core.loadAllMigrations()
       for (let migration of migrations) {
         logger.log(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
@@ -78,7 +131,7 @@ function output() {
       ['failed|f', 'List output for the latest failed migration, if any'],
       ['raw|r', 'Do not add timestamps and streams to output']
     ],
-    action: async ({name, since: rawSince, until: rawUntil, failed, raw}) => {
+    action: async ({name, since: rawSince, until: rawUntil, failed, raw}: OutputOptions) => {
       const since = parseDate(rawSince),
         until = parseDate(rawUntil, 1)
 
@@ -103,7 +156,7 @@ function output() {
           }
           console.log('')
         }
-        const exception = migration.output.exception
+        const exception = migration.output && migration.output.exception
         if (exception) {
           console.log(cliColor.xterm(9)('Exception: ' + exception.message))
           if (exception.stack) {
@@ -113,7 +166,7 @@ function output() {
         }
       }
 
-      function outputLine(line) {
+      function outputLine(line: OutputLineWithStream) {
         if (raw) return line.data
         const lastChar = line.data[line.data.length - 1]
         const terminator = lastChar === '\n' || lastChar === '\r' ? '' : '\n'
@@ -123,22 +176,24 @@ function output() {
     }
   }
 
-  function parseDate(dateStr, dayOffset = 0) {
+  function parseDate(dateStr: string | undefined, dayOffset = 0) {
     if (!dateStr) return undefined
     const isFullISOString = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{3}.+$/,
       isDuration = /^(\d+)\s*(\w+)$/
 
     if (isFullISOString.test(dateStr)) return new Date(dateStr)
     if (isDuration.test(dateStr)) {
-      const [, amount, unit] = dateStr.match(isDuration)
-      return moment().subtract(amount, unit).toDate()
+      const match = dateStr.match(isDuration) || []
+      const [, amount, unit] = match
+      const duration = moment.duration(parseInt(amount), <moment.unitOfTime.Base>unit)
+      return moment().subtract(duration).toDate()
     }
 
     const extractor = /^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d)(?::(\d\d)(?:\.(\d{3})))?)?$/
-    const [, year, month, day, hour = 0, minute = 0, second = 0, msec = 0] = dateStr.match(extractor) || []
+    const [, year = '', month = '', day = '', hour = '0', minute = '0', second = '0', msec = '0'] = dateStr.match(extractor) || []
 
     if (!year) throw new Error('Invalid date format')
-    return new Date(year, parseInt(month) - 1, parseInt(day) + dayOffset, hour, minute, second, msec)
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day) + dayOffset, parseInt(hour), parseInt(minute), parseInt(second), parseInt(msec))
   }
 }
 
@@ -147,7 +202,7 @@ function createTemplate() {
     options: [
       ['name|n=s', 'Name for the template']
     ],
-    action: async function ({name: rawName}) {
+    action: async function ({name: rawName}: CreateTemplateOptions) {
       const name = rawName || await queryName()
 
       const filename = await core.createTemplate(name)
@@ -172,7 +227,7 @@ function create() {
       ['friendlyName|name|n=s', 'Friendly name for migration script'],
       ['template|t=s', 'Template name']
     ],
-    async action({friendlyName, template = 'default'}) {
+    async action({friendlyName, template = 'default'}: CreateOptions) {
       if (!friendlyName) {
         return await createWizard()
       }
@@ -201,25 +256,28 @@ async function createWizard() {
     }
   ])
 
-  const filename = await core.createMigrationScript(answers.scriptName, templates.find(item => item.name === answers.template).refName)
+  const find = templates.find(item => item.name === answers.template)
+  if (!find) throw new Error('Internal error')
+  const filename = await core.createMigrationScript(answers.scriptName, find.refName)
   logger.log('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
 }
 
 function getTemplates() {
-  const customTemplateDir = config.getDir('templateDir')
+  const customTemplateDir = getDir("templateDir")
   const templates = [...getTemplatesFrom(customTemplateDir)].map(getTemplateInfo)
-  if (!templates.some(item => item.rawName === 'default')) {
+  if (!templates.some(item => item.refName === 'default')) {
     templates.push({name: '(simple default)', refName: 'default'})
   }
   return templates
 }
 
-function getTemplateInfo(item) {
+function getTemplateInfo(item: TemplateInfo) {
+  if (!item.filename) throw new Error('Internal error')
   const template = require(item.filename)
   return Object.assign({}, item, {name: template.templateName || item.refName})
 }
 
-function* getTemplatesFrom(dir, prefix = '') {
+function* getTemplatesFrom(dir: string, prefix = ''): IterableIterator<TemplateInfo> {
   const isJS = /\.js$/,
     isTemplateJS = /\.template\.js$/
   for (let file of fs.readdirSync(dir)) {
@@ -241,7 +299,7 @@ function run() {
       ['yes', 'Automatically confirm deployment'],
       ['dry-run|d', 'Pretend to run migrations without actually doing so']
     ],
-    action({production = false, yes: confirmed = false, 'dry-run': dryRun}) {
+    action({production = false, yes: confirmed = false, 'dry-run': dryRun}: RunOptions) {
       return core.runMigrations({production, confirmation: confirmed ? undefined : confirmation, dryRun})
     }
   }
@@ -249,7 +307,7 @@ function run() {
 
 function ensureNoDevelopmentScripts() {
   return {
-    async action() {
+    async action(options: Options) {
       const migrations = await core.loadAllMigrations()
       if (migrations.some(mig => mig.inDevelopment)) {
         throw new Error('There are migration scripts still in develoment.')
