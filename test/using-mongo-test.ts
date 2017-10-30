@@ -43,7 +43,7 @@ describe('mongo-storage-test', function () {
       }
       configure({
         using: {
-          mongodb: require('../src/using/using.mongodb')(mongoURL)
+          mongodb: require('../src/using/mongodb')(mongoURL)
         }
       })
     })

@@ -1,7 +1,6 @@
 import {MongoClient, Db} from 'mongodb'
 import * as _ from 'lodash'
 
-
 module.exports = _.memoize(function(mongoURL : string) {
   return {
     setup() {
