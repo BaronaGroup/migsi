@@ -1,7 +1,7 @@
 const gulp = require('gulp'),
   ts = require('gulp-typescript'),
-  es2017Project = ts.createProject('tsconfig.json', {target: 'es2017', rootDir: 'src'}),
-  es2016Project = ts.createProject('tsconfig.json', {target: 'es2016', rootDir: 'src'}),
+  es2017Project = ts.createProject('tsconfig-lib.json', {target: 'es2017', rootDir: './src'}),
+  es2016Project = ts.createProject('tsconfig-lib.json', {target: 'es2016', rootDir: 'src'}),
   testProject = ts.createProject('tsconfig.json', {target: 'es2017'}),
   clean = require('gulp-clean')
   symlink = require('gulp-symlink')
