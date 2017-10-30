@@ -39,7 +39,7 @@ describe('output-tracking-test', function () {
         run: () => {
           return new Promise(resolve => {
             const cp = require('child_process')
-            const child = cp.spawn('bash', ['-c', 'cat ../package.json | grep name | head -n1'], {cwd: __dirname, stdio: 'pipe'})
+            const child = cp.spawn('bash', ['-c', 'cat ../../package.json | grep name | head -n1'], {cwd: __dirname, stdio: 'pipe'})
             child.stdout.pipe(process.stdout)
             child.stderr.pipe(process.stderr)
             child.on('close', resolve)
@@ -77,7 +77,7 @@ describe('output-tracking-test', function () {
 async function getMigration(name : string) {
   if (!config.storage) throw new Error('Storage not found')
   const pastMigrations = await config.storage.loadPastMigrations()
-  const found = pastMigrations.find(m => m.migsiName === name);
+  const found = pastMigrations.find(m => m.migsiName === name)
   if (!found) throw new Error('Did not find migration')
   return found
 }

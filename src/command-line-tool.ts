@@ -183,7 +183,7 @@ function output() {
 
     if (isFullISOString.test(dateStr)) return new Date(dateStr)
     if (isDuration.test(dateStr)) {
-      const match = dateStr.match(isDuration) || [];
+      const match = dateStr.match(isDuration) || []
       const [, amount, unit] = match
       const duration = moment.duration(parseInt(amount), <moment.unitOfTime.Base>unit)
       return moment().subtract(duration).toDate()
@@ -256,7 +256,7 @@ async function createWizard() {
     }
   ])
 
-  const find = templates.find(item => item.name === answers.template);
+  const find = templates.find(item => item.name === answers.template)
   if (!find) throw new Error('Internal error')
   const filename = await core.createMigrationScript(answers.scriptName, find.refName)
   logger.log('The script can be found to be edited at ' + path.relative(process.cwd(), filename))

@@ -1,9 +1,11 @@
 import {wipeWorkspace, runMigrations, configure} from './test-utils'
-import {assert} from 'chai'
+import {assert as chaiAssert} from 'chai'
 import {MongoClient, Db} from 'mongodb'
 import {delay} from '../src/utils'
 import * as fs from 'fs'
 import * as path from 'path'
+
+const assert = chaiAssert // doing this so that other references to assert don't fail
 
 describe('mongo-storage-test', function () {
 
@@ -41,7 +43,7 @@ describe('mongo-storage-test', function () {
       }
       configure({
         using: {
-          mongodb: require('../using/mongodb')(mongoURL)
+          mongodb: require('../src/using/using.mongodb')(mongoURL)
         }
       })
     })
@@ -59,7 +61,7 @@ describe('mongo-storage-test', function () {
       }
 
       const migrationBody = `
-      const import {assert} from 'chai'
+      const {assert} = require('chai')
       module.exports = {
         using: ['mongodb', () => '${collectionName}'],
         run: ${run.toString()}

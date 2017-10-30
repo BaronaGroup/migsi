@@ -222,7 +222,7 @@ function returnAllDependants(parent : Migration, migrations : Migration[]) {
   }
 
   function getMigration(name : string) : Migration {
-    const migration = migrations.find(migration => migration.migsiName === name);
+    const migration = migrations.find(migration => migration.migsiName === name)
     if (!migration) throw new Error('Dependency not found: ' + name)
     return migration
   }

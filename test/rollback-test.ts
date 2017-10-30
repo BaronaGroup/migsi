@@ -68,7 +68,7 @@ describe('rollback-test', function () {
         dependencies: ['b'],
         rollback: true,
         run: function() {
-          if (eval('global.fail')) throw new Error('failure')
+          if (eval('global.fail')) throw new Error('failure') // eslint-disable-line no-eval
           return this.__run()
         }
       })
@@ -109,7 +109,7 @@ describe('rollback-test', function () {
       g.fail = true
       createMigration('a', {
         rollback: true, run: function () {
-          if (eval('global.fail')) throw new Error('failure')
+          if (eval('global.fail')) throw new Error('failure') // eslint-disable-line no-eval
           return this.__run()
         }
       })

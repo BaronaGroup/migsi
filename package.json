@@ -19,19 +19,22 @@
     "chai": "^4.1.2",
     "eslint": "^4.0.0",
     "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-symlink": "^2.1.4",
     "gulp-typescript": "^3.2.3",
     "mocha": "^3.4.2",
     "npm-release": "^1.0.0",
     "post-commit": "0.0.1",
     "source-map-support": "^0.5.0",
-    "typescript": "^2.5.3"
+    "typescript": "^2.5.3",
+    "typescript-eslint-parser": "^8.0.1"
   },
   "license": "MIT",
   "author": {
     "name": "Tapani Haka"
   },
   "scripts": {
-    "eslint": "eslint . --max-warnings=0",
+    "eslint": "eslint . --max-warnings=0 --ext ts",
     "background-eslint-hook": "background-eslint-hook",
     "test": "npm run build-test && mocha test-build/test/*.js",
     "build-es2017": "gulp es2017",

@@ -16,9 +16,9 @@ export default class SupportManager {
       await this.prepareSupport(support)
     }
     return (migration.using || []).map(support => {
-      const found = this.prepared.find(preparedSupport => preparedSupport.identity === support);
+      const found = this.prepared.find(preparedSupport => preparedSupport.identity === support)
       if (!found) throw new Error('Internal error')
-      return found.value;
+      return found.value
     })
   }
 
