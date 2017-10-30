@@ -1,7 +1,6 @@
 {
   "delay": 200,
   "ignore": [
-    "test-workspace",
     "es2017",
     "es2016",
     "test-build"
