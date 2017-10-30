@@ -1,3 +1,6 @@
+1.0.0: The whole code base is now written in typescript. This should not affect the functionality, although the conversion
+       process did reveal a number of minor bugs that have now been fixed.
+
 0.4.0: add output tracking
 
 0.3.0: fix mongo storage returning before having saved migration status
