@@ -3,9 +3,9 @@ module.exports = function(moduleName) {
   var majorVersion = parseInt((process.version.match(/^v(\d+)/) || [])[1])
 
   if (majorVersion >= 8) {
-    return extractDefault(require('./es2017/' + moduleName))
+    return extractDefault(require('./build/es2017/' + moduleName))
   } else {
-    return extractDefault(require('./es2016/' + moduleName))
+    return extractDefault(require('./build/es2016/' + moduleName))
   }
 }
 

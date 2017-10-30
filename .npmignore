@@ -1,5 +1,5 @@
 test-workspace
 test
-test-build
+build/test
 .idea
 *.iml

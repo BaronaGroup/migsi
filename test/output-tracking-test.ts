@@ -39,7 +39,7 @@ describe('output-tracking-test', function () {
         run: () => {
           return new Promise(resolve => {
             const cp = require('child_process')
-            const child = cp.spawn('bash', ['-c', 'cat ../../package.json | grep name | head -n1'], {cwd: __dirname, stdio: 'pipe'})
+            const child = cp.spawn('bash', ['-c', 'cat ../../../package.json | grep name | head -n1'], {cwd: __dirname, stdio: 'pipe'})
             child.stdout.pipe(process.stdout)
             child.stderr.pipe(process.stderr)
             child.on('close', resolve)
