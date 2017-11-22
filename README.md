@@ -368,6 +368,8 @@ throws. The function can return a promise that resolves to one of the specified 
 
     await migsi.runMigrations({confirmation: async migrations => requestConfirmationFromUser(migrations)})
     
+`runMigrations` returns an array of migrations that were run.
+    
 ### Rollback
 
 Any failed migration scripts are automatically rolled back, if they support rollback.
@@ -376,3 +378,26 @@ At this time there is no way to manually roll back existing migrations; tools fo
 date. 
 
     
+## Working with a node.js clusters
+
+Clusters and migrations can prove to be problematic, especially if the application is updated slowly
+with old nodes still serving users while new ones are already active. During such time the database
+needs to be both in its pre-migration form as well as its post-migration form, which is impractical
+at best.
+
+One option for dealing with this situation is:
+
+- ensure all running versions of the code base are mostly compatible with each other
+- it must be possible to run migration scripts multiple times
+- run migrations as the node process starts
+
+If old node processes are still running at that time:
+
+- the scripts should be run with the option `skipProgressFlag: true`
+- once the old processes are gone, the migrations should be run again, without the flag
+
+Migrations that do not need to run again (because the old versions of the code base do not
+produce data in the old format) can check `this.hasActuallyBeenRun` to see if the script has
+already been run.
+  
+

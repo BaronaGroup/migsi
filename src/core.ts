@@ -99,7 +99,7 @@ async function updateTemplate(rawTemplate: string, variables: TemplateVariables)
     .replace(/\n?.+\/\/.+migsi-template-exclude-line/g, '')
 }
 
-export const runMigrations = async function ({production, confirmation, dryRun = false}: RunOptions = {}) {
+export const runMigrations = async function ({production, confirmation, dryRun = false, skipProgressFlag}: RunOptions = {}) {
   if (!config.storage) throw new Error('No storage set up')
   let migrations = await loadAllMigrations()
   if (production) {
@@ -122,11 +122,11 @@ export const runMigrations = async function ({production, confirmation, dryRun =
 
   if (!toBeRun.length) {
     logger.log('No migrations to be run.')
-    return
+    return toBeRun
   }
 
   logger.log(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
-  if (!await confirmMigrations(toBeRun)) return
+  if (!await confirmMigrations(toBeRun)) return toBeRun
 
   const supportManager = new SupportManager(toBeRun)
 
@@ -154,11 +154,16 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       logger.log(migration.migsiName + ', duration ' + duration)
       migration.toBeRun = false
       migration.hasBeenRun = true
+      migration.hasActuallyBeenRun = true
       migration.failedToRun = false
       migration.rolledBack = false
       migration.eligibleToRun = !!migration.inDevelopment
       migration.runDate = new Date()
       if (!dryRun) {
+        if (skipProgressFlag) {
+          migration.hasBeenRun = false
+
+        }
         await config.storage.updateStatus(migration)
       }
 
@@ -167,6 +172,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       migration.failedToRun = true
       migration.runDate = null
       migration.hasBeenRun = false
+      migration.hasActuallyBeenRun = false
       migration.output.exception = exceptionToOutput(err)
       if (!dryRun) {
         await config.storage.updateStatus(migration)
@@ -207,6 +213,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         migration.rolledBack = true
         migration.runDate = null
         migration.hasBeenRun = false
+        migration.hasActuallyBeenRun = false
         if (migration.failedToRun) await config.storage.updateStatus(migration)
         await trackOutput(migration, 'rollback', () => migration.rollback(...supportObjs))
         await config.storage.updateStatus(migration)

@@ -6,7 +6,7 @@ import * as crypto from 'crypto'
 import {config, getDir} from './config'
 import logger from './logger'
 
-const MIGSI_DATA_VERSION = 2
+const MIGSI_DATA_VERSION = 3
 
 const isMigrationFile = /\.migsi\.js$/
 
@@ -110,6 +110,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
     if (past && !past.inDevelopment && !config.allowRerunningAllMigrations && (past.hasBeenRun || past.migsiVersion < 2)) {
       return Object.assign({}, migrationBase, {hasBeenRun: true}, past, {toBeRun: false, eligibleToRun: false})
     }
+    if (past && past.hasBeenRun && past.migsiVersion < 3) past.hasActuallyBeenRun = true
     const migration = Object.assign({}, past || {}, migrationBase, loadMigration(file))
     migration.migsiVersion = MIGSI_DATA_VERSION
     if (past) {

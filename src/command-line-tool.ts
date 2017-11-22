@@ -299,8 +299,8 @@ function run() {
       ['yes', 'Automatically confirm deployment'],
       ['dry-run|d', 'Pretend to run migrations without actually doing so']
     ],
-    action({production = false, yes: confirmed = false, 'dry-run': dryRun}: RunOptions) {
-      return core.runMigrations({production, confirmation: confirmed ? undefined : confirmation, dryRun})
+    async action({production = false, yes: confirmed = false, 'dry-run': dryRun}: RunOptions) {
+      await core.runMigrations({production, confirmation: confirmed ? undefined : confirmation, dryRun})
     }
   }
 }

@@ -63,6 +63,7 @@ interface Migration {
   inDevelopment: boolean,
   migsiVersion: number,
   hasBeenRun: boolean,
+  hasActuallyBeenRun: boolean,
   version: string | number
   versionChanged: boolean,
   friendlyName: string,
@@ -120,6 +121,7 @@ interface TemplateVariables {
 interface RunOptions {
   production?: boolean,
   dryRun?: boolean,
+  skipProgressFlag?: boolean,
   confirmation?: (migrations: RunnableMigration[]) => Promise<any> | any
 }
 
