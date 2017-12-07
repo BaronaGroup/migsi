@@ -26,11 +26,11 @@ export default class SupportManager {
     const toClose = this.prepared.filter(preparedSupport => !this.remainingMigrations.some(migration => (migration.using || []).some(support => preparedSupport.identity === support)))
     for (let supportToClose of toClose) {
       if (isCloseable(supportToClose.implementation)) {
-        supportToClose.implementation.close(supportToClose.value)
+        await supportToClose.implementation.close(supportToClose.value)
       } else {
         const valueClose = _.get(supportToClose, 'value.close')
         if (valueClose) {
-          supportToClose.value.close(supportToClose.value)
+          await supportToClose.value.close(supportToClose.value)
         }
       }
     }
