@@ -41,4 +41,15 @@ describe('dependencies-test', function () {
     createMigration('b', {dependencies: ['a']})
     await expectFailure(runMigrations())
   })
+
+  it('fixing dependency order works correctly (bugfix 1.2.1)', async function() {
+    createMigration('a', {dependencies: []})
+    createMigration('d', {dependencies: []})
+    createMigration('g', {dependencies: []})
+    await runMigrations(true)
+    createMigration('b', {dependencies: ['a']})
+    createMigration('e', {dependencies: ['d']})
+    createMigration('f', {dependencies: ['d']})
+    await runMigrations(true)
+  })
 })

@@ -46,6 +46,7 @@ function fixParallelDependencyOrder(migrations : Migration[]) {
     if (a.toBeRun && !b.eligibleToRun) {
       if (!b.dependencies.includes(a.migsiName)) {
         migs.splice(i, 2, b, a)
+        i = Math.max(i - 2, -1)
       } else {
         if (config.allowRerunningAllMigrations) {
           returnAllDependants(a, migrations)
@@ -57,12 +58,12 @@ function fixParallelDependencyOrder(migrations : Migration[]) {
     } else if (a.toBeRun && !b.toBeRun) { // b could be run, but doesn't need to be
       if (!b.dependencies.includes(a.migsiName)) { // reorder them to for ideal order
         migs.splice(i, 2, b, a)
-        --i
+        i = Math.max(i - 2, -1)
       }
     } else if (a.inDevelopment && !b.inDevelopment) { // production scripts before development
       if (!b.dependencies.includes(a.migsiName)) { // reorder them to for ideal order
         migs.splice(i, 2, b, a)
-        --i
+        i = Math.max(i - 2, -1)
       }
     }
   }
@@ -122,7 +123,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
     return migration
   })
   for (let migration of migrations) {
-    if (!migration.dependencies) migration.dependencies = []
+    migration.dependencies = migration.dependencies || []
   }
   try {
     const sortedMigrations = sortMigrations(migrations)
@@ -146,7 +147,7 @@ async function updateDependencies(migration : Migration) {
   const fullFilename = path.join(getDir('migrationDir'), migration.migsiName + '.migsi.js')
   const migrationFromDisk = exportFriendlyRequire(fullFilename)
   const d1 = migration.dependencies || [],
-    d2 = migrationFromDisk.dependencies || []
+    d2 = _.compact(migrationFromDisk.dependencies || [])
 
   if (d2.length) {
     if (d1.length !== d2.length || _.difference(d2, d1).length > 0) {
