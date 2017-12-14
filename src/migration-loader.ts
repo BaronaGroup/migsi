@@ -122,7 +122,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
     return migration
   })
   for (let migration of migrations) {
-    if (!migration.dependencies) migration.dependencies = []
+    migration.dependencies = _.compact(migration.dependencies || [])
   }
   try {
     const sortedMigrations = sortMigrations(migrations)
