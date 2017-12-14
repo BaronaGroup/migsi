@@ -46,6 +46,7 @@ function fixParallelDependencyOrder(migrations : Migration[]) {
     if (a.toBeRun && !b.eligibleToRun) {
       if (!b.dependencies.includes(a.migsiName)) {
         migs.splice(i, 2, b, a)
+        i = Math.max(i - 2, -1)
       } else {
         if (config.allowRerunningAllMigrations) {
           returnAllDependants(a, migrations)
@@ -57,12 +58,12 @@ function fixParallelDependencyOrder(migrations : Migration[]) {
     } else if (a.toBeRun && !b.toBeRun) { // b could be run, but doesn't need to be
       if (!b.dependencies.includes(a.migsiName)) { // reorder them to for ideal order
         migs.splice(i, 2, b, a)
-        --i
+        i = Math.max(i - 2, -1)
       }
     } else if (a.inDevelopment && !b.inDevelopment) { // production scripts before development
       if (!b.dependencies.includes(a.migsiName)) { // reorder them to for ideal order
         migs.splice(i, 2, b, a)
-        --i
+        i = Math.max(i - 2, -1)
       }
     }
   }
