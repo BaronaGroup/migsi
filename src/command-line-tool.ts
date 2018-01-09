@@ -55,15 +55,6 @@ interface CommandList {
   [index: string]: Command
 }
 
-
-declare module "inquirer" {
-  // Built in, but not included in the provided type definitions
-  interface Question {
-    prefix?: string,
-    suffix?: string
-  }
-}
-
 const commands: CommandList = {
   'list': <Command>list(),
   'create': <Command>create(),
