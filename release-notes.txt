@@ -1,3 +1,6 @@
+1.2.2: Fix a bug with loading migrations when a development script was run before a production script.
+       Calls to console replaced with calls to logger
+
 1.2.1: Fix a major bug with ensuring that migrations that have been run aren't left after new ones in the migration order
        Also fixes the placeholder empty dependencies becoming real dependencies when the dependencies are reloaded after
        a failed order fixing.
