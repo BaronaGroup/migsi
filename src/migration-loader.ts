@@ -60,7 +60,7 @@ function fixParallelDependencyOrder(migrations : Migration[]) {
         migs.splice(i, 2, b, a)
         i = Math.max(i - 2, -1)
       }
-    } else if (a.inDevelopment && !b.inDevelopment) { // production scripts before development
+    } else if (a.inDevelopment && !b.inDevelopment && a.toBeRun === b.toBeRun) { // production scripts before development
       if (!b.dependencies.includes(a.migsiName)) { // reorder them to for ideal order
         migs.splice(i, 2, b, a)
         i = Math.max(i - 2, -1)

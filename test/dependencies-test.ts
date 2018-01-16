@@ -52,4 +52,12 @@ describe('dependencies-test', function () {
     createMigration('f', {dependencies: ['d']})
     await runMigrations(true)
   })
+
+  it('fixing dependency order works correctly (bugfix 1.2.2)', async function() {
+    createMigration('base', {dependencies: [], inDevelopment: false})
+    createMigration('a', {dependencies: ['base'], inDevelopment: true})
+    await runMigrations(false)
+    createMigration('b', {dependencies: ['base'], inDevelopment: false})
+    await runMigrations(false)
+  })
 })
