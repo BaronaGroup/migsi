@@ -4,6 +4,7 @@ import {MongoClient, Db} from 'mongodb'
 import {delay} from '../src/utils'
 import * as fs from 'fs'
 import * as path from 'path'
+import logger from '../src/logger'
 
 const assert = chaiAssert // doing this so that other references to assert don't fail
 
@@ -22,7 +23,7 @@ describe('mongo-storage-test', function () {
       try {
         connection = await MongoClient.connect(mongoURL)
       } catch (err) {
-        console.warn(`Mongo-storage tests are disabled: failed to connect to mongo at ${mongoURL}; please provide an URL to the ` +
+        logger.warn(`Mongo-storage tests are disabled: failed to connect to mongo at ${mongoURL}; please provide an URL to the ` +
           'mongo you wish to use to run these tests as the environment variable MIGSI_MONGO_URL ' +
           `to override the default (${defaultMongoURL})`)
       }
@@ -34,7 +35,7 @@ describe('mongo-storage-test', function () {
           await delay(200) // another connection might not see the changes immediately, so we delay a bit here
           enabled = true
         } catch (err) {
-          console.error(err.stack)
+          logger.error(err.stack)
           throw new Error(err)
 
         } finally {

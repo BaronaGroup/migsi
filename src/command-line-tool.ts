@@ -76,7 +76,7 @@ async function runApp() {
 
 runApp().catch(err => {
   if (!err.printed) {
-    console.error(err.stack || err)
+    logger.error(err.stack || err)
   }
   process.exit(1)
 })
@@ -131,29 +131,29 @@ function output() {
 
       for (let migration of migrations) {
         const linearRunOutput = outputProcessor.makeLinear(migration, 'run')
-        console.log(cliColor.xterm(33)('Migration: ' + migration.friendlyName))
+        logger.log(cliColor.xterm(33)('Migration: ' + migration.friendlyName))
         if (linearRunOutput.length) {
-          console.log(cliColor.xterm(129)('Run output'))
+          logger.log(cliColor.xterm(129)('Run output'))
           for (let line of linearRunOutput) {
             process.stdout.write(outputLine(line))
           }
-          console.log('')
+          logger.log('')
         }
         const linearRollbackOutput = outputProcessor.makeLinear(migration, 'rollback')
         if (linearRollbackOutput.length) {
-          console.log(cliColor.xterm(214)('Rolled back'))
+          logger.log(cliColor.xterm(214)('Rolled back'))
           for (let line of linearRollbackOutput) {
             process.stdout.write(outputLine(line))
           }
-          console.log('')
+          logger.log('')
         }
         const exception = migration.output && migration.output.exception
         if (exception) {
-          console.log(cliColor.xterm(9)('Exception: ' + exception.message))
+          logger.log(cliColor.xterm(9)('Exception: ' + exception.message))
           if (exception.stack) {
-            console.log(exception.stack)
+            logger.log(exception.stack)
           }
-          console.log('')
+          logger.log('')
         }
       }
 

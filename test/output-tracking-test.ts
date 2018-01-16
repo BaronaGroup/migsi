@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 import {wipeWorkspace, createMigration, runMigrations, configure, expectFailure} from './test-utils'
 import {assert} from 'chai'
 import {config} from '../src/config'

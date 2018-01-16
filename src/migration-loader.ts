@@ -83,7 +83,7 @@ function checkMigrationOrderValidity(migrations : Migration[], dependenciesHaveB
         potentialDependencyMigration = migration.migsiName
       } else if (!migration.inDevelopment) {
         if (dependenciesHaveBeenUpdated) {
-          console.error(`${migration.migsiName} can not be run, as it should've been run before the migrations ${toBeRun.join(', ')}, which ha(s|ve) not been run.
+          logger.error(`${migration.migsiName} can not be run, as it should've been run before the migrations ${toBeRun.join(', ')}, which ha(s|ve) not been run.
         
         To solve this problem, you can either:
         - add an explicit dependency to run ${migration.migsiName} before the others; usually by having ${migration.migsiName} depend on a migration script that
@@ -94,7 +94,7 @@ function checkMigrationOrderValidity(migrations : Migration[], dependenciesHaveB
         }
         throw new Error('Invalid migration order')
       } else {
-        console.warn(`Some of the dependencies of ${migration.migsiName} are to be run despite it having been run already. This is permitted as the script is still under development. If you need it run as well, please increment its version number.`)
+        logger.warn(`Some of the dependencies of ${migration.migsiName} are to be run despite it having been run already. This is permitted as the script is still under development. If you need it run as well, please increment its version number.`)
       }
     }
   }

@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 import {wipeWorkspace, runMigrations, expectFailure, assertMigrations, createMigration} from './test-utils'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -112,18 +114,20 @@ describe('command-line-tool-test', function () {
   })
 
   describe('output', function () {
+    let wasQuiet: string | undefined
+
     describe('data', function () {
       it('is able to display stdout', async function () {
         createMigration('s1', {run: () => console.log('hello from within')})
         await runMigrations()
-        const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile}`)
+        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
         assert.ok(stdout.split('\n').some(line => line.includes('stdout') && line.includes('hello from within')))
       })
 
       it('is able to display stderr', async function () {
         createMigration('s1', {run: () => console.error('error from within')})
         await runMigrations()
-        const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile}`)
+        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
         assert.ok(stdout.split('\n').some(line => line.includes('stderr') && line.includes('error from within')))
       })
 
@@ -134,14 +138,14 @@ describe('command-line-tool-test', function () {
           }
         })
         await expectFailure(runMigrations())
-        const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile}`)
+        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
         assert.ok(stdout.split('\n').some(line => line.includes('This migration failed')))
       })
 
       it('raw', async function () {
         createMigration('s1', {run: () => console.log('hello from within')})
         await runMigrations()
-        const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile} --raw`)
+        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --raw`)
         assert.ok(stdout.split('\n').includes('hello from within'))
       })
     })
@@ -151,7 +155,7 @@ describe('command-line-tool-test', function () {
         createMigration('s1', {run: () => console.log('s1 says hi')})
         createMigration('s2', {run: () => console.log('s2 says hi')})
         await runMigrations()
-        const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile} --name=s1`)
+        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --name=s1`)
         const lines = stdout.split('\n')
         assert.ok(lines.some(line => line.includes('stdout') && line.includes('s1 says hi')))
         assert.ok(!lines.some(line => line.includes('stdout') && line.includes('s2 says hi')))
@@ -165,7 +169,7 @@ describe('command-line-tool-test', function () {
           }, dependencies: ['s1']
         })
         await expectFailure(runMigrations())
-        const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile} --failed`)
+        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --failed`)
         const lines = stdout.split('\n')
         assert.ok(!lines.some(line => line.includes('s1 says hi')))
         assert.ok(lines.some(line => line.includes('s2 says fail')))

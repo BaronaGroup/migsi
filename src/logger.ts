@@ -1,4 +1,4 @@
-
+/* eslint no-console: 0 */
 
 const log = (...args : any[]) => {
   if (!process.env.MIGSI_QUIET) {
