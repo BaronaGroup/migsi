@@ -1,3 +1,5 @@
+1.2.3: Fix a typo in ensure-no-development-scripts exception
+
 1.2.2: Fix a bug with loading migrations when a development script was run before a production script.
        Calls to console replaced with calls to logger
 
