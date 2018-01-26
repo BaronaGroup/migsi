@@ -1,6 +1,6 @@
 {
   "name": "migsi",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A node.js migration tool suitable for all kinds of migrations",
   "homepage": "https://github.com/BaronaGroup/migsi",
   "repository": {
