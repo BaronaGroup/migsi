@@ -172,6 +172,12 @@ should work as well.
   lots of data or confidential data, you also might want to disable the tracking. At this time
   there is no way to disable output tracking only for individual migration scripts.
   
+- `logger` can be set to an object, which contains functions for logging. If omitted, the default logger is used, which
+  displays nothing if the environment variable MIGSI_QUIET is set to a truthy value. The default logger uses
+  console.log for regular messages, console.warn for warnings and console.error for errors. Your logger should
+  provide the methods `info`, `error` and `warn` which all take any number of parameters containing the things
+  to log, just like the console functions.
+  
 #### Storage
 
 Storage should include an implementation of migration status storage engine. Migsi comes with a few built in
