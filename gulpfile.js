@@ -48,4 +48,4 @@ gulp.task('test-clean', function() {
 
 gulp.task('clean', ['es2016-clean', 'es2017-clean', 'test-clean'])
 
-gulp.task('default', ['es2016', 'es2017'])
+gulp.task('default', ['clean', 'es2016', 'es2017'])
