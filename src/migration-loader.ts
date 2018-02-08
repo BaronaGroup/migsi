@@ -20,7 +20,7 @@ const migrationBase = {
 function sortMigrations(unsorted : Migration[]) {
   const dependencyMap = _.fromPairs(unsorted.map(migration => [migration.migsiName, migration.dependencies.length ? migration.dependencies : ['*']]))
   const migrationMap = _.keyBy(unsorted, migration => migration.migsiName)
-  if (process.env.MIGSI_PRINT_DEPENDENCY_MAP) logger.log(JSON.stringify(dependencyMap, null, 2))
+  if (process.env.MIGSI_PRINT_DEPENDENCY_MAP) logger.info(JSON.stringify(dependencyMap, null, 2))
   const missingDependencies : string[] = []
   for (let migration of unsorted) {
     for (let dependency of migration.dependencies)
@@ -151,7 +151,7 @@ async function updateDependencies(migration : Migration) {
 
   if (d2.length) {
     if (d1.length !== d2.length || _.difference(d2, d1).length > 0) {
-      logger.log('Updating dependencies of', migration.migsiName)
+      logger.info('Updating dependencies of', migration.migsiName)
       migration.dependencies = d2
       await config.storage.updateStatus(migration)
     }

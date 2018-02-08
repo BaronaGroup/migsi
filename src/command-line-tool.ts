@@ -107,7 +107,7 @@ function list() {
     action: async function (options: NoOptions) {
       const migrations = await core.loadAllMigrations()
       for (let migration of migrations) {
-        logger.log(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
+        logger.info(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
       }
     }
   }
@@ -131,29 +131,29 @@ function output() {
 
       for (let migration of migrations) {
         const linearRunOutput = outputProcessor.makeLinear(migration, 'run')
-        logger.log(cliColor.xterm(33)('Migration: ' + migration.friendlyName))
+        logger.info(cliColor.xterm(33)('Migration: ' + migration.friendlyName))
         if (linearRunOutput.length) {
-          logger.log(cliColor.xterm(129)('Run output'))
+          logger.info(cliColor.xterm(129)('Run output'))
           for (let line of linearRunOutput) {
             process.stdout.write(outputLine(line))
           }
-          logger.log('')
+          logger.info('')
         }
         const linearRollbackOutput = outputProcessor.makeLinear(migration, 'rollback')
         if (linearRollbackOutput.length) {
-          logger.log(cliColor.xterm(214)('Rolled back'))
+          logger.info(cliColor.xterm(214)('Rolled back'))
           for (let line of linearRollbackOutput) {
             process.stdout.write(outputLine(line))
           }
-          logger.log('')
+          logger.info('contextSpecificLogLevels')
         }
         const exception = migration.output && migration.output.exception
         if (exception) {
-          logger.log(cliColor.xterm(9)('Exception: ' + exception.message))
+          logger.info(cliColor.xterm(9)('Exception: ' + exception.message))
           if (exception.stack) {
-            logger.log(exception.stack)
+            logger.info(exception.stack)
           }
-          logger.log('')
+          logger.info('')
         }
       }
 
@@ -197,7 +197,7 @@ function createTemplate() {
       const name = rawName || await queryName()
 
       const filename = await core.createTemplate(name)
-      logger.log('Template created as ', path.relative(process.cwd(), filename))
+      logger.info('Template created as ', path.relative(process.cwd(), filename))
 
       async function queryName() {
         const {name} = await inquirer.prompt({
@@ -223,7 +223,7 @@ function create() {
         return await createWizard()
       }
       const filename = await core.createMigrationScript(friendlyName, template)
-      logger.log('Migration script created: ' + filename)
+      logger.info('Migration script created: ' + filename)
     }
   }
 }
@@ -250,7 +250,7 @@ async function createWizard() {
   const find = templates.find(item => item.name === answers.template)
   if (!find) throw new Error('Internal error')
   const filename = await core.createMigrationScript(answers.scriptName, find.refName)
-  logger.log('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
+  logger.info('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
 }
 
 function getTemplates() {

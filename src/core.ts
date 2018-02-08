@@ -112,20 +112,20 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         throw new Error(`There are development scripts present for production usage; will not run any migrations.\n\nThe scrips marked for development are ${excludedDev.map(mig => mig.migsiName)}`)
       }
       migrations = migrations.slice(0, index)
-      logger.log(`Excluding development mode migration scripts:\n${excludedDev.map(mig => mig.migsiName).join('\n')}`)
+      logger.info(`Excluding development mode migration scripts:\n${excludedDev.map(mig => mig.migsiName).join('\n')}`)
       const excludedProd = excluded.filter(mig => !mig.inDevelopment)
-      logger.log(`Excluding production mode migration scripts dependant on development scripts:\n${excludedProd.map(mig => mig.migsiName).join('\n')}`)
+      logger.info(`Excluding production mode migration scripts dependant on development scripts:\n${excludedProd.map(mig => mig.migsiName).join('\n')}`)
     }
   }
 
   const toBeRun: RunnableMigration[] = <RunnableMigration[]>migrations.filter(m => m.toBeRun)
 
   if (!toBeRun.length) {
-    logger.log('No migrations to be run.')
+    logger.info('No migrations to be run.')
     return toBeRun
   }
 
-  logger.log(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
+  logger.info(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
   if (!await confirmMigrations(toBeRun)) return toBeRun
 
   const supportManager = new SupportManager(toBeRun)
@@ -137,7 +137,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
     migration.output = {}
     try {
       logger.write(cliColor.xterm(33)('Running: '))
-      logger.log(migration.migsiName)
+      logger.info(migration.migsiName)
       const supportObjs = await supportManager.prepare(migration)
       if (migration.rollback) {
         rollbackable.push(migration)
@@ -151,7 +151,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
       logger.write(cliColor.xterm(40)('Success: '))
-      logger.log(migration.migsiName + ', duration ' + duration)
+      logger.info(migration.migsiName + ', duration ' + duration)
       migration.toBeRun = false
       migration.hasBeenRun = true
       migration.hasActuallyBeenRun = true
@@ -178,7 +178,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         await config.storage.updateStatus(migration)
       }
       await supportManager.destroy()
-      logger.log(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
+      logger.info(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
       if (!dryRun) { // support functionality failed, we do not want to be rolling back anything because of it
         await rollback(rollbackable, toBeRun)
@@ -191,7 +191,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
   async function rollback(rollbackable: RunnableMigration[], toBeRun: RunnableMigration[]) {
     if (!config.storage) throw new Error('Storage not set up')
     if (!rollbackable.length) {
-      logger.log('Rollback is not supported by the failed migration script.')
+      logger.info('Rollback is not supported by the failed migration script.')
       return
     }
     const rollbackAll = config.rollbackAll
@@ -206,7 +206,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       const before = new Date()
       try {
         logger.write(cliColor.xterm(33)('Rolling back: '))
-        logger.log(migration.migsiName)
+        logger.info(migration.migsiName)
         const supportObjs = await supportManager.prepare(migration)
         migration.toBeRun = true
         migration.eligibleToRun = true
@@ -221,7 +221,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
           durationMsec = after.valueOf() - before.valueOf()
         const duration = Math.floor(durationMsec / 100) / 10 + ' s'
         logger.write(cliColor.xterm(40)('Rollback success: '))
-        logger.log(migration.migsiName + ', duration ' + duration)
+        logger.info(migration.migsiName + ', duration ' + duration)
 
         await supportManager.finish()
 
@@ -230,7 +230,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         migration.output.rollbackException = exceptionToOutput(err)
         await config.storage.updateStatus(migration)
         await supportManager.destroy()
-        logger.log(cliColor.xterm(9)('Failure to rollback: ' + migration.migsiName, err.stack || err))
+        logger.info(cliColor.xterm(9)('Failure to rollback: ' + migration.migsiName, err.stack || err))
         err.printed = true
         throw err
       }

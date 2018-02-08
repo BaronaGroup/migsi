@@ -1,6 +1,6 @@
 /* eslint no-console: 0 */
 
-const log = (...args : any[]) => {
+const info = (...args : any[]) => {
   if (!process.env.MIGSI_QUIET) {
     console.log(...args)
   }
@@ -25,7 +25,7 @@ const write = (data : any) => {
 }
 
 const api = {
-  log,
+  info,
   warn,
   error,
   write
