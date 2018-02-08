@@ -4,7 +4,7 @@ import {MongoClient, Db} from 'mongodb'
 import {delay} from '../src/utils'
 import * as fs from 'fs'
 import * as path from 'path'
-import logger from '../src/logger'
+import logger from '../src/default-logger'
 
 const assert = chaiAssert // doing this so that other references to assert don't fail
 

@@ -3,7 +3,7 @@ import mongoStorage, {defaultCollectionName} from '../src/storage/mongo'
 import {assert} from 'chai'
 import {MongoClient, Db} from 'mongodb'
 import {delay} from '../src/utils'
-import logger from '../src/logger'
+import logger from '../src/default-logger'
 
 
 describe('mongo-storage-test', function () {

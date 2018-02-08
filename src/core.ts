@@ -5,8 +5,8 @@ import * as _ from 'lodash'
 import {config, getDir, setupConfig, findAndLoadConfig} from './config'
 import {findMigrations} from './migration-loader'
 import SupportManager from './support-manager'
-import logger from './logger'
 import {trackOutput} from './output-tracker'
+import {getLogger} from './utils'
 
 export const loadAllMigrations = async function () {
   return await findMigrations()
@@ -100,6 +100,7 @@ async function updateTemplate(rawTemplate: string, variables: TemplateVariables)
 }
 
 export const runMigrations = async function ({production, confirmation, dryRun = false, skipProgressFlag}: RunOptions = {}) {
+  const logger = getLogger()
   if (!config.storage) throw new Error('No storage set up')
   let migrations = await loadAllMigrations()
   if (production) {
@@ -136,8 +137,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
     const before = new Date()
     migration.output = {}
     try {
-      logger.write(cliColor.xterm(33)('Running: '))
-      logger.info(migration.migsiName)
+      logger.info(cliColor.xterm(33)('Running:'), migration.migsiName)
       const supportObjs = await supportManager.prepare(migration)
       if (migration.rollback) {
         rollbackable.push(migration)
@@ -150,8 +150,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
-      logger.write(cliColor.xterm(40)('Success: '))
-      logger.info(migration.migsiName + ', duration ' + duration)
+      logger.info(cliColor.xterm(40)('Success:'), migration.migsiName + ', duration ' + duration)
       migration.toBeRun = false
       migration.hasBeenRun = true
       migration.hasActuallyBeenRun = true
@@ -205,8 +204,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
     for (let migration of toRollback) {
       const before = new Date()
       try {
-        logger.write(cliColor.xterm(33)('Rolling back: '))
-        logger.info(migration.migsiName)
+        logger.info(cliColor.xterm(33)('Rolling back:'), migration.migsiName)
         const supportObjs = await supportManager.prepare(migration)
         migration.toBeRun = true
         migration.eligibleToRun = true
@@ -220,8 +218,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         const after = new Date(),
           durationMsec = after.valueOf() - before.valueOf()
         const duration = Math.floor(durationMsec / 100) / 10 + ' s'
-        logger.write(cliColor.xterm(40)('Rollback success: '))
-        logger.info(migration.migsiName + ', duration ' + duration)
+        logger.info(cliColor.xterm(40)('Rollback success:'), migration.migsiName + ', duration ' + duration)
 
         await supportManager.finish()
 

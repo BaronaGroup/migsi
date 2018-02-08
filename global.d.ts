@@ -1,5 +1,13 @@
 //import {Question} from 'inquirer'
 
+type LogFn = (...toLog: any[]) => void
+
+interface LoggerInterface {
+  info: LogFn
+  warn: LogFn
+  error: LogFn
+}
+
 interface Config {
   pathsRelativeTo?: string,
   allowRerunningAllMigrations?: boolean,
@@ -12,6 +20,7 @@ interface Config {
     [index: string]: SetuppableUsingDeclaration | ActiveUsingDeclaration
   }
   disableOutputTracking?: boolean
+  logger?: LoggerInterface
 }
 
 interface SetuppableUsingDeclaration {

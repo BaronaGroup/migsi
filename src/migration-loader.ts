@@ -4,7 +4,7 @@ import * as dependencySolver from 'dependency-solver'
 import * as _ from 'lodash'
 import * as crypto from 'crypto'
 import {config, getDir} from './config'
-import logger from './logger'
+import {getLogger} from './utils'
 
 const MIGSI_DATA_VERSION = 3
 
@@ -20,7 +20,7 @@ const migrationBase = {
 function sortMigrations(unsorted : Migration[]) {
   const dependencyMap = _.fromPairs(unsorted.map(migration => [migration.migsiName, migration.dependencies.length ? migration.dependencies : ['*']]))
   const migrationMap = _.keyBy(unsorted, migration => migration.migsiName)
-  if (process.env.MIGSI_PRINT_DEPENDENCY_MAP) logger.info(JSON.stringify(dependencyMap, null, 2))
+  if (process.env.MIGSI_PRINT_DEPENDENCY_MAP) getLogger().info(JSON.stringify(dependencyMap, null, 2))
   const missingDependencies : string[] = []
   for (let migration of unsorted) {
     for (let dependency of migration.dependencies)
@@ -71,6 +71,7 @@ function fixParallelDependencyOrder(migrations : Migration[]) {
 }
 
 function checkMigrationOrderValidity(migrations : Migration[], dependenciesHaveBeenUpdated = false) {
+  const logger = getLogger()
   let anyToRun = false,
     potentialDependencyMigration,
     toBeRun = []
@@ -151,7 +152,7 @@ async function updateDependencies(migration : Migration) {
 
   if (d2.length) {
     if (d1.length !== d2.length || _.difference(d2, d1).length > 0) {
-      logger.info('Updating dependencies of', migration.migsiName)
+      getLogger().info('Updating dependencies of', migration.migsiName)
       migration.dependencies = d2
       await config.storage.updateStatus(migration)
     }
@@ -229,3 +230,4 @@ function returnAllDependants(parent : Migration, migrations : Migration[]) {
     return migration
   }
 }
+

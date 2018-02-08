@@ -1,7 +1,6 @@
 import * as core from './core'
 import * as nodeGetoptLong from 'node-getopt-long'
 import {config, getDir, setupConfig, findAndLoadConfig} from './config'
-import logger from './logger'
 import * as path from 'path'
 import * as inquirer from 'inquirer'
 import * as _ from 'lodash'
@@ -9,6 +8,8 @@ import * as fs from 'fs'
 import {outputProcessor} from './output-tracker'
 import * as cliColor from 'cli-color'
 import * as moment from 'moment'
+import defaultLogger from './default-logger'
+import {getLogger} from './utils'
 
 interface Options {
   config?: string
@@ -76,7 +77,7 @@ async function runApp() {
 
 runApp().catch(err => {
   if (!err.printed) {
-    logger.error(err.stack || err)
+    getLogger().error(err.stack || err)
   }
   process.exit(1)
 })
@@ -107,7 +108,7 @@ function list() {
     action: async function (options: NoOptions) {
       const migrations = await core.loadAllMigrations()
       for (let migration of migrations) {
-        logger.info(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
+        getLogger().info(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
       }
     }
   }
@@ -123,6 +124,7 @@ function output() {
       ['raw|r', 'Do not add timestamps and streams to output']
     ],
     action: async ({name, since: rawSince, until: rawUntil, failed, raw}: OutputOptions) => {
+      const logger = getLogger()
       const since = parseDate(rawSince),
         until = parseDate(rawUntil, 1)
 
@@ -197,7 +199,7 @@ function createTemplate() {
       const name = rawName || await queryName()
 
       const filename = await core.createTemplate(name)
-      logger.info('Template created as ', path.relative(process.cwd(), filename))
+      getLogger().info('Template created as ', path.relative(process.cwd(), filename))
 
       async function queryName() {
         const {name} = await inquirer.prompt({
@@ -223,7 +225,7 @@ function create() {
         return await createWizard()
       }
       const filename = await core.createMigrationScript(friendlyName, template)
-      logger.info('Migration script created: ' + filename)
+      getLogger().info('Migration script created: ' + filename)
     }
   }
 }
@@ -250,7 +252,7 @@ async function createWizard() {
   const find = templates.find(item => item.name === answers.template)
   if (!find) throw new Error('Internal error')
   const filename = await core.createMigrationScript(answers.scriptName, find.refName)
-  logger.info('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
+  getLogger().info('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
 }
 
 function getTemplates() {

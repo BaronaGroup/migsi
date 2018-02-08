@@ -18,17 +18,11 @@ const error = (...args : any[]) => {
   }
 }
 
-const write = (data : any) => {
-  if (!process.env.MIGSI_QUIET) {
-    process.stdout.write(data)
-  }
-}
 
 const api = {
   info,
   warn,
-  error,
-  write
+  error
 }
 
 export default api
