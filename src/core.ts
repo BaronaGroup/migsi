@@ -1,6 +1,6 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import * as cliColor from 'cli-color'
+import {xtermColor} from './xterm-color-tty-only'
 import * as _ from 'lodash'
 import {config, getDir, setupConfig, findAndLoadConfig} from './config'
 import {findMigrations} from './migration-loader'
@@ -137,7 +137,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
     const before = new Date()
     migration.output = {}
     try {
-      logger.info(cliColor.xterm(33)('Running:'), migration.migsiName)
+      logger.info(xtermColor(33)('Running:'), migration.migsiName)
       const supportObjs = await supportManager.prepare(migration)
       if (migration.rollback) {
         rollbackable.push(migration)
@@ -150,7 +150,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
       const duration = Math.floor(durationMsec / 100) / 10 + ' s'
-      logger.info(cliColor.xterm(40)('Success:'), migration.migsiName + ', duration ' + duration)
+      logger.info(xtermColor(40)('Success:'), migration.migsiName + ', duration ' + duration)
       migration.toBeRun = false
       migration.hasBeenRun = true
       migration.hasActuallyBeenRun = true
@@ -177,7 +177,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         await config.storage.updateStatus(migration)
       }
       await supportManager.destroy()
-      logger.info(cliColor.xterm(9)('Failure: ' + migration.migsiName, err.stack || err))
+      logger.info(xtermColor(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
       if (!dryRun) { // support functionality failed, we do not want to be rolling back anything because of it
         await rollback(rollbackable, toBeRun)
@@ -204,7 +204,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
     for (let migration of toRollback) {
       const before = new Date()
       try {
-        logger.info(cliColor.xterm(33)('Rolling back:'), migration.migsiName)
+        logger.info(xtermColor(33)('Rolling back:'), migration.migsiName)
         const supportObjs = await supportManager.prepare(migration)
         migration.toBeRun = true
         migration.eligibleToRun = true
@@ -218,7 +218,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         const after = new Date(),
           durationMsec = after.valueOf() - before.valueOf()
         const duration = Math.floor(durationMsec / 100) / 10 + ' s'
-        logger.info(cliColor.xterm(40)('Rollback success:'), migration.migsiName + ', duration ' + duration)
+        logger.info(xtermColor(40)('Rollback success:'), migration.migsiName + ', duration ' + duration)
 
         await supportManager.finish()
 
@@ -227,7 +227,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         migration.output.rollbackException = exceptionToOutput(err)
         await config.storage.updateStatus(migration)
         await supportManager.destroy()
-        logger.info(cliColor.xterm(9)('Failure to rollback: ' + migration.migsiName, err.stack || err))
+        logger.info(xtermColor(9)('Failure to rollback: ' + migration.migsiName, err.stack || err))
         err.printed = true
         throw err
       }
