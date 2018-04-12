@@ -202,12 +202,12 @@ function createTemplate() {
       getLogger().info('Template created as ', path.relative(process.cwd(), filename))
 
       async function queryName() {
-        const {name} = await inquirer.prompt({
+        const {name} = (await inquirer.prompt({
           message: 'Please enter for template',
           name: 'name',
           prefix: '',
           suffix: ':'
-        })
+        })) as any
         return name
       }
     }
@@ -233,7 +233,7 @@ function create() {
 async function createWizard() {
   const templates = await getTemplates()
 
-  const answers = await inquirer.prompt([
+  const answers = (await inquirer.prompt([
     {
       name: 'scriptName',
       message: 'Migration script name (does not have to look like a filename)',
@@ -247,7 +247,7 @@ async function createWizard() {
       choices: _.map(templates, 'name'),
       prefix: ''
     }
-  ])
+  ])) as any
 
   const find = templates.find(item => item.name === answers.template)
   if (!find) throw new Error('Internal error')
@@ -312,7 +312,7 @@ function ensureNoDevelopmentScripts() {
 async function confirmation() {
   //if (require('tty').isatty(process.stdin)) return true
   if (process.argv.includes('--yes')) return true
-  const {confirmed} = await inquirer.prompt([
+  const {confirmed} = (await inquirer.prompt([
     {
       message: 'Do you want to run these migrations?',
       type: 'confirm',
@@ -320,6 +320,6 @@ async function confirmation() {
       prefix: '',
       default: false
     }
-  ])
+  ])) as any
   return confirmed
 }
