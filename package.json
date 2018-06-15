@@ -54,7 +54,7 @@
     "cli-color": "^1.2.0",
     "dependency-solver": "^1.0.6",
     "inquirer": "^5.2.0",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.10",
     "moment": "^2.22.0",
     "mongodb": "^2.2.35",
     "node-getopt-long": "^0.3.2"
