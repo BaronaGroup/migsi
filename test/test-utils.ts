@@ -42,11 +42,14 @@ function emptyDirectory(directory : string) {
 }
 
 export const configure = function(overrides = {}) {
-  const storage = jsonFileStorage(__dirname + '/../test-workspace/status.json')
+  const storage = jsonFileStorage(__dirname + '/../test-workspace/status.json'),
+    longtermStatus = __dirname + '/../test-workspace/longterm-status.json'
+
   const configObject = Object.assign({
     storage: storage,
     migrationDir: __dirname + '/../test-workspace',
-    prefixAlgorithm: () => ''
+    prefixAlgorithm: () => '',
+    migsiStatusFile: longtermStatus
   }, overrides)
 
   setupConfig(configObject)

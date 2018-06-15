@@ -62,7 +62,8 @@ const commands: CommandList = {
   'run': <Command>run(),
   'ensure-no-development-scripts': <Command>ensureNoDevelopmentScripts(),
   'create-template': <Command>createTemplate(),
-  'output': <Command>output()
+  'output': <Command>output(),
+  'archive': <Command>archive()
 }
 
 async function runApp() {
@@ -213,6 +214,33 @@ function createTemplate() {
     }
   }
 }
+
+
+function archive() {
+  return {
+    options: [],
+    action: async function (options: NoOptions) {
+      const migrations = await core.loadAllMigrations()
+      for (let migration of migrations) {
+        if (!migration.archived) {
+          const {confirmed}: {confirmed: boolean} = (await inquirer.prompt({
+            message: 'Archive ' + migration.friendlyName + '?',
+            type: 'confirm',
+            name: 'confirmed',
+            prefix: '',
+            suffix: ':'
+          })) as any
+
+          if (confirmed) {
+            await core.archive(migration)
+            getLogger().info('Archived ' + migration.friendlyName)
+          }
+        }
+      }
+    }
+  }
+}
+
 
 function create() {
   return {

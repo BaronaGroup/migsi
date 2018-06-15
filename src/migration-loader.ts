@@ -5,6 +5,7 @@ import * as _ from 'lodash'
 import * as crypto from 'crypto'
 import {config, getDir} from './config'
 import {getLogger} from './utils'
+import {isArchived} from './migsi-status'
 
 const MIGSI_DATA_VERSION = 3
 
@@ -76,7 +77,7 @@ function checkMigrationOrderValidity(migrations : Migration[], dependenciesHaveB
     potentialDependencyMigration,
     toBeRun = []
   for (let migration of migrations) {
-    if (migration.toBeRun || (anyToRun && config.allowRerunningAllMigrations)) {
+    if (migration.toBeRun || (anyToRun && config.allowRerunningAllMigrations) || (anyToRun && migration.eligibleToRun && migration.archived)) {
       anyToRun = true
       toBeRun.push(migration.migsiName)
     } else {
@@ -105,7 +106,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
   if (!config.storage) throw new Error('Missing storage')
   const pastMigrations = await config.storage.loadPastMigrations()
   const files = findAllMigrationFiles()
-  const migrations = files.map(function (file) {
+  const migrations = await Promise.all(files.map(async function (file) {
     const past = pastMigrations.find(migration => migration.migsiName === file.split('.migsi.js')[0])
     if (past && !past.migsiVersion) past.migsiVersion = 1
 
@@ -119,10 +120,13 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
       migration.versionChanged = migration.version !== past.version
       migration.hasBeenRun = past.hasBeenRun || past.migsiVersion < 2
     }
-    migration.toBeRun = !past || !past.hasBeenRun || migration.versionChanged
+    if (await isArchived(migration as Migration)) {
+      migration.archived = true
+    }
+    migration.toBeRun = (!past || !past.hasBeenRun || migration.versionChanged) && !migration.archived
     migration.eligibleToRun = !past || !past.hasBeenRun || !!past.inDevelopment || (config.allowRerunningAllMigrations && migration.toBeRun)
     return migration
-  })
+  }))
   for (let migration of migrations) {
     migration.dependencies = migration.dependencies || []
   }

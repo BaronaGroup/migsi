@@ -7,6 +7,7 @@ import {findMigrations} from './migration-loader'
 import SupportManager from './support-manager'
 import {trackOutput} from './output-tracker'
 import {getLogger} from './utils'
+import {archive as archiveImpl} from './migsi-status'
 
 export const loadAllMigrations = async function () {
   return await findMigrations()
@@ -144,8 +145,12 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       } else {
         rollbackable = []
       }
-      if (!dryRun) {
-        await trackOutput(migration, 'run', () => migration.run(...supportObjs))
+      if (!migration.archived) {
+        if (!dryRun) {
+          await trackOutput(migration, 'run', () => migration.run(...supportObjs))
+        }
+      } else {
+        logger.info('Skipping migration as it has been archived')
       }
       const after = new Date(),
         durationMsec = after.valueOf() - before.valueOf()
@@ -153,7 +158,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       logger.info(xtermColor(40)('Success:'), migration.migsiName + ', duration ' + duration)
       migration.toBeRun = false
       migration.hasBeenRun = true
-      migration.hasActuallyBeenRun = true
+      migration.hasActuallyBeenRun = !migration.archived
       migration.failedToRun = false
       migration.rolledBack = false
       migration.eligibleToRun = !!migration.inDevelopment
@@ -276,10 +281,15 @@ async function getImplicitDependencyName() {
   return migrations[migrations.length - 1].migsiName
 }
 
-export const configure = function (configData: Config | string | undefined) {
+export async function archive(migration: Migration) {
+  return await archiveImpl(migration)
+}
+
+export const configure = function (configData: Config | string | undefined, modifications?: Partial<Config>) {
   if (typeof configData === 'string') {
     const configuration = require(configData)
-    setupConfig(configuration.default || configuration)
+    const actualConfig = {...(configuration.default || configuration), ...(modifications || {})}
+    setupConfig(actualConfig)
   } else if (_.isObject(configData)) {
     setupConfig(<Config>configData)
   } else {

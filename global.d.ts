@@ -20,7 +20,8 @@ interface Config {
     [index: string]: SetuppableUsingDeclaration | ActiveUsingDeclaration
   }
   disableOutputTracking?: boolean
-  logger?: LoggerInterface
+  logger?: LoggerInterface,
+  migsiStatusFile?: string
 }
 
 interface SetuppableUsingDeclaration {
@@ -79,6 +80,7 @@ interface Migration {
   failedToRun: boolean,
   runDate: Date | null | string
   rolledBack: boolean
+  archived?: boolean
   output?: {
     run?: {
       stdout?: OutputLine[]
@@ -110,7 +112,7 @@ interface Using {
   implementation: ActiveUsingDeclaration
 }
 
-type ConfigDirectoryKey = "migrationDir" | "templateDir"
+type ConfigDirectoryKey = "migrationDir" | "templateDir" | "migsiStatusFile"
 
 interface MigrationFilters {
   name?: string,
