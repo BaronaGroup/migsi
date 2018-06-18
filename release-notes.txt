@@ -1,3 +1,7 @@
+1.5.0: Added support for archived/archiving old migrations
+       Added support for implicit dependencies (plural), which takes into account all dead end migrations as the dependencies
+       producing a more sane dependency tree
+
 1.4.0: Disable color output when stdout is not a tty
 
 1.3.1: Update moment to a more recent version
