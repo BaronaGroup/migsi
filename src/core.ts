@@ -34,7 +34,7 @@ export const createMigrationScript = async function (friendlyName: string, templ
   const ffn = path.join(getDir("migrationDir"), ...relativePath, filename)
 
   if (fs.existsSync(ffn)) {
-    throw new Error(ffn + 'already exists')
+    throw new Error(ffn + ' already exists')
   }
   ensureDirExists(path.dirname(ffn))
   fs.writeFileSync(ffn, updatedTemplate, 'UTF-8')
