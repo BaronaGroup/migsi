@@ -45,6 +45,7 @@ async function loadStatus(): Promise<MigsiStatus> {
 }
 
 async function saveStatus(status: MigsiStatus) {
+  if (!config.migsiStatusFile) throw new Error('Cannot update status of existing migrations unless migsiStatusFile is configured')
   const filename = getDir('migsiStatusFile')
   const json = JSON.stringify(status, null, 2)
   await new Promise<void>((resolve, reject) => fs.writeFile(filename, json, 'UTF-8', err => {
