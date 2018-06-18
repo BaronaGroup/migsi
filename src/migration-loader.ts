@@ -210,7 +210,7 @@ function rerunAllDependants(parent : Migration, migrations : Migration[]) {
   const dependencies : DepencencySets = {}
 
   for (let migration of migrations) {
-    if (isDependant(migration, parent)) {
+    if (isDependant(migration, parent) && !migration.archived) {
       migration.eligibleToRun = true
       migration.toBeRun = true
     }
