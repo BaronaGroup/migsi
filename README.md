@@ -332,7 +332,8 @@ allows you to have your own custom default template.
 The templates can have a few variables set up by the migration creation.
 
 - [[FRIENDLY_NAME]], which becomes the friendly name of the migration
-- [[IMPLICIT_DEPENDENCY]], which becomes the name of the implicit dependency for the migration
+- [[IMPLICIT_DEPENDENCY]], which becomes the name of the implicit dependency for the migration. Deprecated.
+- '[[IMPLICIT_DEPENDENCIES]]' (yes, single quotes included), which becomes an array of dependencies for a migration   
 
 A template can export `templateName` which is used as the name of the template when selecting a template in `migsi create`.
 

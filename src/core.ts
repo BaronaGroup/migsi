@@ -95,8 +95,10 @@ function findTemplate(templateName: string) {
 }
 
 async function updateTemplate(rawTemplate: string, variables: TemplateVariables) {
+  const implicitDependencies = '[' + (await getImplicitDependencyNames()).map(dependency => "'" + dependency.replace(/'/g, '\\') + "'").join(', ') + ']'
   return rawTemplate.replace(/\[\[FRIENDLY_NAME\]\]/g, variables.friendlyName)
     .replace(/\[\[IMPLICIT_DEPENDENCY\]\]/g, await getImplicitDependencyName())
+    .replace(/'\[\[IMPLICIT_DEPENDENCIES\]\]'/g, implicitDependencies)
     .replace(/\n?.+\/\/.+migsi-template-exclude-line/g, '')
 }
 
@@ -279,6 +281,13 @@ async function getImplicitDependencyName() {
   const migrations = await findMigrations()
   if (!migrations.length) return ''
   return migrations[migrations.length - 1].migsiName
+}
+
+async function getImplicitDependencyNames() {
+  const migrations = await findMigrations()
+  const dependencies = ([] as string[]).concat(...migrations.map(m => m.dependencies))
+  return migrations.filter(migration => !dependencies.includes(migration.migsiName))
+    .map(migration => migration.migsiName)
 }
 
 export async function archive(migration: Migration) {
