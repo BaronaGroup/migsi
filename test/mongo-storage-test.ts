@@ -1,7 +1,7 @@
 import {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} from './test-utils'
 import mongoStorage, {defaultCollectionName} from '../src/storage/mongo'
 import {assert} from 'chai'
-import {MongoClient, Db} from 'mongodb'
+import {MongoClient, Db, Collection} from 'mongodb'
 import {delay} from '../src/utils'
 import logger from '../src/default-logger'
 
@@ -45,7 +45,7 @@ describe('mongo-storage-test', function () {
 
     beforeEach(wipeWorkspace)
 
-    it('can be given a mongo URL', function () {
+    it('can be given a mongo URL', async function () {
       if (!enabled) return this.skip()
       configure({storage: mongoStorage(mongoURL)})
     })
@@ -74,11 +74,15 @@ describe('mongo-storage-test', function () {
       await delay(200) // another connection might not see the changes immediately, so we delay the assert a bit
       const db = await MongoClient.connect(mongoURL)
       try {
-        assert.equal(await db.collection(customCollectionName).count({}), 1)
+        assert.equal(await getCollection(db, customCollectionName).count({}), 1)
       } finally {
         await db.close()
       }
     })
   })
+
+  function getCollection(db: Db, collectionName: string): Collection<any> {
+    return (db as any).collection(collectionName)
+  }
 
 })
