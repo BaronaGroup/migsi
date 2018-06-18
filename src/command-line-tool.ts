@@ -109,7 +109,14 @@ function list() {
     action: async function (options: NoOptions) {
       const migrations = await core.loadAllMigrations()
       for (let migration of migrations) {
-        getLogger().info(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', migration.runDate || 'to-be-run')
+        const runStatus =
+        migration.toBeRun ? 'to-be-run'
+          : migration.runDate ? migration.runDate
+          : migration.hasBeenRun ? 'has-been-run'
+            : migration.archived ? 'archived'
+                : 'unknown-state'
+        
+        getLogger().info(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', runStatus)
       }
     }
   }
