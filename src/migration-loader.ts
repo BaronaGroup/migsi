@@ -50,7 +50,7 @@ function fixParallelDependencyOrder(migrations : Migration[]) {
         i = Math.max(i - 2, -1)
       } else {
         if (config.allowRerunningAllMigrations) {
-          returnAllDependants(a, migrations)
+          rerunAllDependants(a, migrations)
         } else {
           // cannot fix, abort
           return migs
@@ -203,7 +203,7 @@ function exportFriendlyRequire(filename : string) : Partial<Migration> {
   return module.default || module
 }
 
-function returnAllDependants(parent : Migration, migrations : Migration[]) {
+function rerunAllDependants(parent : Migration, migrations : Migration[]) {
   interface DepencencySets {
     [index: string]: string[]
   }
