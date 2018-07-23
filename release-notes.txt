@@ -1,4 +1,7 @@
-1.5.1: Operate on copies of migrations instead of mutating the values exported my migration scripts.
+1.5.2: Operate on copies of migrations instead of mutating the values exported my migration scripts.
+
+1.5.1: Output of migsi list has been improved
+       Archived dependants are no longer flagged a migrations that need to be run
 
 1.5.0: Added support for archived/archiving old migrations
        Added support for implicit dependencies (plural), which takes into account all dead end migrations as the dependencies
