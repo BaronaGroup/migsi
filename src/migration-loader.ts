@@ -165,7 +165,7 @@ async function updateDependencies(migration : Migration) {
 
 function loadMigration(filename : string) {
   const fullFilename = path.join(getDir('migrationDir'), filename)
-  const migration = exportFriendlyRequire(fullFilename)
+  const migration = Object.assign({}, exportFriendlyRequire(fullFilename))
   migration.dependencies = _.compact(migration.dependencies || [])
   migration.migsiName = filename.split('.migsi.js')[0]
   if (migration.version === 'hash') {
