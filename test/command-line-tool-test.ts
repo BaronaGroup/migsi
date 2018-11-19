@@ -15,6 +15,7 @@ interface RunOutput {
 }
 
 import 'mocha'
+import {Migration} from '../src/migration'
 
 describe('command-line-tool-test', function () {
   const workspace = path.join(__dirname, '..', 'test-workspace'),

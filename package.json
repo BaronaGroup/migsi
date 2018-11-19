@@ -26,8 +26,8 @@
     "npm-release": "^1.0.0",
     "post-commit": "0.0.1",
     "source-map-support": "^0.5.4",
-    "typescript": "^2.8.1",
-    "typescript-eslint-parser": "^14.0.0"
+    "typescript": "^3.1.6",
+    "typescript-eslint-parser": "^21.0.1"
   },
   "license": "MIT",
   "author": {
@@ -58,5 +58,6 @@
     "moment": "^2.22.0",
     "mongodb": "^2.2.35",
     "node-getopt-long": "^0.3.2"
-  }
+  },
+  "types": "build/es2017/migsi.d.ts"
 }

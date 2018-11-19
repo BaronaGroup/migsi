@@ -1,5 +1,40 @@
 import * as _ from 'lodash'
-import {config} from './config'
+import {Config, config} from './config'
+import {Migration} from './migration'
+
+
+export interface SetuppableUsingDeclaration {
+  setup: (config: Config) => Promise<ActiveUsingDeclaration>
+}
+
+interface OpenableUsing {
+  open: (config: Config) => Promise<any>
+}
+
+interface CloseableUsing {
+  close: (openValue: any) => Promise<void>
+}
+
+type UnopenedUsingDeclaration = OpenableUsing | ((config: Config) => Promise<any>)
+export type ActiveUsingDeclaration =
+  OpenableUsing
+  | CloseableUsing
+  | (OpenableUsing & CloseableUsing)
+  | ((config: Config) => Promise<any>)
+
+interface Using {
+  identity: AnyUsingDeclaration,
+  value: any,
+  implementation: ActiveUsingDeclaration
+}
+
+
+interface UsingImplementation {
+
+}
+
+export type AnyUsingDeclaration = SetuppableUsingDeclaration | ActiveUsingDeclaration | string
+
 
 export default class SupportManager {
   remainingMigrations: Migration[]

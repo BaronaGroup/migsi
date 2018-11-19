@@ -13,6 +13,7 @@ import * as core from '../src/core'
 import * as fs from 'fs'
 import {assert} from 'chai'
 import * as path from 'path'
+import {Migration} from '../src/migration'
 
 describe('config-options-test', function () {
   beforeEach(wipeWorkspace)

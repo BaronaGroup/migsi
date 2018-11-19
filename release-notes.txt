@@ -1,3 +1,5 @@
+1.6.0: Typescript types are now exported
+
 1.5.2: Operate on copies of migrations instead of mutating the values exported my migration scripts.
 
 1.5.1: Output of migsi list has been improved

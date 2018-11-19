@@ -1,3 +1,5 @@
+import {Migration} from '../migration'
+
 const api = {
   loadPastMigrations,
   updateStatus

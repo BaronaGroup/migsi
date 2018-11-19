@@ -6,6 +6,7 @@ import * as crypto from 'crypto'
 import {config, getDir} from './config'
 import {getLogger} from './utils'
 import {isArchived} from './migsi-status'
+import {Migration} from './migration'
 
 const MIGSI_DATA_VERSION = 3
 

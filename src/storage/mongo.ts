@@ -1,5 +1,6 @@
 import {MongoClient, Db} from 'mongodb'
 import * as _ from 'lodash'
+import {Migration} from '../migration'
 
 const api = {
   loadPastMigrations,

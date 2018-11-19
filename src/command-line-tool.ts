@@ -10,6 +10,12 @@ import * as cliColor from 'cli-color'
 import * as moment from 'moment'
 import defaultLogger from './default-logger'
 import {getLogger} from './utils'
+import {OutputLine} from './migration'
+
+export interface OutputLineWithStream extends OutputLine {
+  stream: string
+}
+
 
 interface Options {
   config?: string
@@ -115,7 +121,7 @@ function list() {
           : migration.hasBeenRun ? 'has-been-run'
             : migration.archived ? 'archived'
                 : 'unknown-state'
-        
+
         getLogger().info(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', runStatus)
       }
     }

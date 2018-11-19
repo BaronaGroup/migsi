@@ -1,10 +1,11 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "allowJs": true,
+    "allowJs": false,
     "target": "es2017",
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "declaration": true,
     "lib": [
       "ES2016"
     ],

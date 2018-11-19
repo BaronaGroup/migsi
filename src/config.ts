@@ -1,5 +1,39 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import {Migration, RunnableMigration} from './migration'
+import {ActiveUsingDeclaration, SetuppableUsingDeclaration} from './support-manager'
+
+export interface Storage {
+  loadPastMigrations: () => Promise<Migration[]> | Migration[]
+  updateStatus: (migration: Migration) => Promise<void> | void
+}
+
+type LogFn = (...toLog: any[]) => void
+
+export interface LoggerInterface {
+  info: LogFn
+  warn: LogFn
+  error: LogFn
+}
+
+type ConfigDirectoryKey = "migrationDir" | "templateDir" | "migsiStatusFile"
+
+export interface Config {
+  pathsRelativeTo?: string,
+  allowRerunningAllMigrations?: boolean,
+  storage?: Storage,
+  prefixAlgorithm?: () => string,
+  failOnDevelopmentScriptsInProductionMode?: boolean,
+  rollbackAll?: boolean,
+  confirmation?: (migrations: RunnableMigration[], extra: any) => Promise<boolean>
+  using?: {
+    [index: string]: SetuppableUsingDeclaration | ActiveUsingDeclaration
+  }
+  disableOutputTracking?: boolean
+  logger?: LoggerInterface,
+  migsiStatusFile?: string
+}
+
 
 export const config: Config = {}
 declare function require(name:string) : any

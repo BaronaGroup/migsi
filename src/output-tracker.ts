@@ -1,6 +1,7 @@
 import * as _ from 'lodash'
 import {config} from './config'
 import {Writable} from 'stream'
+import {Migration, OutputLine} from './migration'
 
 type Context = "run" | "rollback"
 type StreamName = "stdout" | "stderr"

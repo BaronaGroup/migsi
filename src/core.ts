@@ -2,12 +2,27 @@ import * as path from 'path'
 import * as fs from 'fs'
 import {xtermColor} from './xterm-color-tty-only'
 import * as _ from 'lodash'
-import {config, getDir, setupConfig, findAndLoadConfig} from './config'
+import {config, getDir, setupConfig, findAndLoadConfig, Config} from './config'
 import {findMigrations} from './migration-loader'
 import SupportManager from './support-manager'
 import {trackOutput} from './output-tracker'
 import {getLogger} from './utils'
 import {archive as archiveImpl} from './migsi-status'
+import {Migration, RunnableMigration, TemplateVariables} from './migration'
+
+interface MigrationFilters {
+  name?: string,
+  since?: Date,
+  until?: Date,
+  failed?: boolean
+}
+
+interface RunOptions {
+  production?: boolean,
+  dryRun?: boolean,
+  skipProgressFlag?: boolean,
+  confirmation?: (migrations: RunnableMigration[]) => Promise<any> | any
+}
 
 export const loadAllMigrations = async function () {
   return await findMigrations()
