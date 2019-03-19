@@ -97,8 +97,11 @@ function findTemplate(templateName: string) {
   const templateDir = getDir("templateDir")
   const candidates = _.compact([
     templateDir && path.join(templateDir, templateName + '.template.js'),
+    templateDir && path.join(templateDir, templateName + '.template.ts'),
     templateDir && path.join(templateDir, templateName + '.js'),
-    path.join(__dirname, '..', 'templates', templateName + '.js')
+    templateDir && path.join(templateDir, templateName + '.ts'),
+    path.join(__dirname, '..', 'templates', templateName + '.js'),
+    path.join(__dirname, '..', 'templates', templateName + '.ts')
   ])
   for (let candidate of candidates) {
     if (fs.existsSync(candidate)) {
