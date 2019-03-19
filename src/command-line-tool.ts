@@ -313,14 +313,16 @@ function getTemplateInfo(item: TemplateInfo) {
 
 function* getTemplatesFrom(dir: string, prefix = ''): IterableIterator<TemplateInfo> {
   const isJS = /\.js$/,
-    isTemplateJS = /\.template\.js$/
+    isTemplateJS = /\.template\.js$/,
+    isTS = /\.ts$/,
+    isTemplateTS = /\.template\.ts$/
   for (let file of fs.readdirSync(dir)) {
     const fullFilename = path.join(dir, file)
     if (fs.statSync(fullFilename).isDirectory()) {
       yield* getTemplatesFrom(fullFilename, path.join(prefix, dir))
-    } else if (isTemplateJS.test(file)) {
+    } else if (isTemplateJS.test(file) || isTemplateTS.test(file)) {
       yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 12))}
-    } else if (isJS.test(file)) {
+    } else if (isJS.test(file) || isTS.test(file)) {
       yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 3))}
     }
   }

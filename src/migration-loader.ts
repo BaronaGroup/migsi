@@ -108,7 +108,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
   const pastMigrations = await config.storage.loadPastMigrations()
   const files = findAllMigrationFiles()
   const migrations = await Promise.all(files.map(async function (file) {
-    const past = pastMigrations.find(migration => migration.migsiName === file.split('.migsi.js')[0])
+    const past = pastMigrations.find(migration => migration.migsiName === file.split(/\.migsi\.[jt]s/)[0])
     if (past && !past.migsiVersion) past.migsiVersion = 1
 
     if (past && !past.inDevelopment && !config.allowRerunningAllMigrations && (past.hasBeenRun || past.migsiVersion < 2)) {
@@ -150,7 +150,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
 
 async function updateDependencies(migration : Migration) {
   if (!config.storage) throw new Error('Missing storage')
-  const fullFilename = path.join(getDir('migrationDir'), migration.migsiName + '.migsi.js')
+  const fullFilename = path.join(getDir('migrationDir'), migration.migsiName + '.migsi')
   const migrationFromDisk = exportFriendlyRequire(fullFilename)
   const d1 = migration.dependencies || [],
     d2 = _.compact(migrationFromDisk.dependencies || [])
@@ -168,7 +168,7 @@ function loadMigration(filename : string) {
   const fullFilename = path.join(getDir('migrationDir'), filename)
   const migration = Object.assign({}, exportFriendlyRequire(fullFilename))
   migration.dependencies = _.compact(migration.dependencies || [])
-  migration.migsiName = filename.split('.migsi.js')[0]
+  migration.migsiName = filename.split(/\.migsi\.[jt]s/)[0]
   if (migration.version === 'hash') {
     migration.version += ':' + getHash(fullFilename)
   }
