@@ -10,7 +10,7 @@ import {Migration} from './migration'
 
 const MIGSI_DATA_VERSION = 3
 
-const isMigrationFile = /\.migsi\.js$/
+const isMigrationFile = /\.migsi\.[jt]s$/
 
 const migrationBase = {
   dependencies: null,
