@@ -17,16 +17,18 @@ describe('custom-logger-test', function () {
     it('for info', loggerTest({}, async function (logged) {
       createMigration('a')
       const migrations = await runMigrations(false)
+      const codesPresent = JSON.stringify(logged.info).includes('\u001b')
+
       assert.deepEqual(logged.info, [
         [
           "Migrations to be run:\na"
         ],
         [
-          "\u001b[38;5;33mRunning:\u001b[39m",
+          `${codesPresent ? '\u001b[38;5;33m' : ''}Running:${codesPresent ? '\u001b[39m' : ''}`,
           "a"
         ],
         [
-          "\u001b[38;5;40mSuccess:\u001b[39m",
+          `${codesPresent ? '\u001b[38;5;40m' : ''}Success:${codesPresent ? '\u001b[39m': ''}`,
           "a, duration 0 s"
         ]
       ])

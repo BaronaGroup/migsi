@@ -43,7 +43,8 @@
     "build": "gulp",
     "build-test": "gulp build-tests",
     "prepare": "npm run build-ts",
-    "release": "npm test && npm-release"
+    "release": "npm test && npm-release",
+    "lint": "npm run eslint"
   },
   "post-commit": [
     "background-eslint-hook"
