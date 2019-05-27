@@ -17,7 +17,7 @@ describe('custom-logger-test', function () {
     it('for info', loggerTest({}, async function (logged) {
       createMigration('a')
       const migrations = await runMigrations(false)
-      const codesPresent = JSON.stringify(logged.info).includes('\u001b')
+      const codesPresent = logged.info[1][0].includes('\u001b')
 
       assert.deepEqual(logged.info, [
         [
