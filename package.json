@@ -27,7 +27,7 @@
     "post-commit": "0.0.1",
     "source-map-support": "0.5.12",
     "typescript": "3.4.5",
-    "typescript-eslint-parser": "21.0.1"
+    "typescript-eslint-parser": "21.0.2"
   },
   "license": "MIT",
   "author": {
