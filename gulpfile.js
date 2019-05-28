@@ -3,49 +3,53 @@ const gulp = require('gulp'),
   es2017Project = ts.createProject('tsconfig-lib.json', {target: 'es2017', rootDir: './src'}),
   es2016Project = ts.createProject('tsconfig-lib.json', {target: 'es2016', rootDir: 'src'}),
   testProject = ts.createProject('tsconfig.json', {target: 'es2017'}),
-  clean = require('gulp-clean')
+  gulpClean = require('gulp-clean'),
   symlink = require('gulp-symlink')
 
-gulp.task("es2017", ['es2017-clean'], function () {
+function buildES2017() {
   return es2017Project.src()
     .pipe(es2017Project())
     .pipe(gulp.dest("build/es2017"))
-})
-
-gulp.task("es2016", ['es2016-clean'], function () {
+}
+function buildES2016() {
   return es2016Project.src()
     .pipe(es2016Project())
     .pipe(gulp.dest("build/es2016"))
-})
+}
 
-gulp.task("build-tests", ['test-ts', 'test-symlink'])
-
-gulp.task('test-symlink', ['test-clean'], function() {
+function testSymlink() {
   return gulp.src('templates')
     .pipe(symlink('build/test/templates'))
-})
+}
 
-gulp.task("test-ts", ['test-clean'], function () {
+function buildTestSources() {
   return testProject.src()
     .pipe(testProject())
     .pipe(gulp.dest("build/test"))
-})
+}
 
-gulp.task('es2016-clean', function() {
+function cleanES2016() {
   return gulp.src('build/es2016/*', {read: false})
-    .pipe(clean())
-})
+    .pipe(gulpClean())
+}
 
-gulp.task('es2017-clean', function() {
+function cleanES2017() {
   return gulp.src('build/es2017/*', {read: false})
-    .pipe(clean())
-})
+    .pipe(gulpClean())
+}
 
-gulp.task('test-clean', function() {
+function cleanTest() {
   return gulp.src('build/test/*', {read: false})
-    .pipe(clean())
-})
+    .pipe(gulpClean())
+}
 
-gulp.task('clean', ['es2016-clean', 'es2017-clean', 'test-clean'])
+const clean = gulp.parallel(cleanES2016, cleanES2017, cleanTest)
+const buildTest = gulp.series(buildTestSources, testSymlink)
+const justBuild = gulp.parallel(buildES2016, buildES2017, buildTest)
 
-gulp.task('default', ['clean', 'es2016', 'es2017'])
+const build = gulp.series(clean, justBuild)
+module.exports = {
+  clean,
+  default: build,
+  build
+}

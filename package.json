@@ -18,7 +18,7 @@
     "background-eslint-hook": "1.0.0",
     "chai": "4.2.0",
     "eslint": "4.19.1",
-    "gulp": "3.9.1",
+    "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
     "gulp-symlink": "2.1.4",
     "gulp-typescript": "4.0.2",
@@ -36,7 +36,7 @@
   "scripts": {
     "eslint": "eslint . --max-warnings=0 --ext ts",
     "background-eslint-hook": "background-eslint-hook",
-    "test": "npm run build-test && mocha build/test/test/*.js",
+    "test": "npm run build && mocha build/test/test/*.js",
     "build-es2017": "gulp es2017",
     "build-es2016": "gulp es2016",
     "build-ts": "npm run build",
