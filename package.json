@@ -22,7 +22,7 @@
     "gulp-clean": "0.4.0",
     "gulp-symlink": "2.1.4",
     "gulp-typescript": "4.0.2",
-    "mocha": "5.2.0",
+    "mocha": "6.1.4",
     "npm-release": "1.0.0",
     "post-commit": "0.0.1",
     "source-map-support": "0.5.12",
