@@ -36,7 +36,7 @@
   "scripts": {
     "eslint": "eslint . --max-warnings=0 --ext ts",
     "background-eslint-hook": "background-eslint-hook",
-    "test": "npm run build-test && mocha build/test/test/*.js",
+    "test": "npm run build && mocha build/test/test/*.js",
     "build-es2017": "gulp es2017",
     "build-es2016": "gulp es2016",
     "build-ts": "npm run build",
