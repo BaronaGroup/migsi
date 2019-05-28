@@ -17,7 +17,7 @@
     "@types/node": "9.6.48",
     "background-eslint-hook": "1.0.0",
     "chai": "4.2.0",
-    "eslint": "4.19.1",
+    "eslint": "5.16.0",
     "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
     "gulp-symlink": "2.1.4",
