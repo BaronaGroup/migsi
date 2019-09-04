@@ -8,7 +8,7 @@
     "url": "BaronaGroup/migsi"
   },
   "devDependencies": {
-    "@types/chai": "4.2.0",
+    "@types/chai": "4.2.1",
     "@types/cli-color": "0.3.29",
     "@types/inquirer": "6.5.0",
     "@types/lodash": "4.14.137",
