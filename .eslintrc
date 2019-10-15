@@ -30,7 +30,8 @@
     "no-undef": 0,
     "no-unused-vars": 0,
     "no-useless-constructor": 0,
-    "space-infix-ops": 0
+    "space-infix-ops": 0,
+    "require-atomic-updates": 0
   },
   "globals": {
     "__filename": true
