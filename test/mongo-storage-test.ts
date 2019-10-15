@@ -19,7 +19,7 @@ describe('mongo-storage-test', function () {
     before(async function () {
       let connection
       try {
-        connection = await MongoClient.connect(mongoURL)
+        connection = await MongoClient.connect(mongoURL) as any
       } catch (err) {
         logger.warn(`Mongo-storage tests are disabled: failed to connect to mongo at ${mongoURL}; please provide an URL to the ` +
           'mongo you wish to use to run these tests as the environment variable MIGSI_MONGO_URL ' +
@@ -74,7 +74,7 @@ describe('mongo-storage-test', function () {
       await delay(200) // another connection might not see the changes immediately, so we delay the assert a bit
       const db = await MongoClient.connect(mongoURL)
       try {
-        assert.equal(await getCollection(db, customCollectionName).count({}), 1)
+        assert.equal(await getCollection(db as any, customCollectionName).count({}), 1)
       } finally {
         await db.close()
       }

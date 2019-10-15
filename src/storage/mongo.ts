@@ -20,12 +20,13 @@ export default function(mongoURL : string, collection = defaultCollectionName) {
 function loadPastMigrations() {
   const that = this
   return withConnection(this.mongoURL, async function(db) {
+    if (!('collection' in db)) throw new Error('Mongo client version mismatch')
     const collection = db.collection(that.collection)
     return await collection.find({}).sort({ runDate: 1 }).toArray()
   })
 }
 
-async function withConnection(mongoURL : string, handler : (mongo : Db) => Promise<any>) {
+async function withConnection(mongoURL : string, handler : (mongo : Db | MongoClient) => Promise<any>) {
   const db = await MongoClient.connect(mongoURL)
   try {
     return await handler(db)
@@ -37,6 +38,7 @@ async function withConnection(mongoURL : string, handler : (mongo : Db) => Promi
 async function updateStatus(migration : Migration) {
   const that = this
   await withConnection(this.mongoURL, async function(db) {
+    if (!('collection' in db)) throw new Error('Mongo client version mismatch')
     const collection = db.collection(that.collection)
     const toSet = _.omit(_.omitBy(migration, entry => _.isFunction(entry)), 'toBeRun', 'eligibleToRun', '_id')
     await collection.updateOne({ migsiName: migration.migsiName}, {$set: toSet}, {upsert: true})
