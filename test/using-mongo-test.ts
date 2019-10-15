@@ -21,7 +21,7 @@ describe('mongo-storage-test', function () {
     before(async function () {
       let connection
       try {
-        connection = await MongoClient.connect(mongoURL)
+        connection = await MongoClient.connect(mongoURL) as any
       } catch (err) {
         logger.warn(`Mongo-storage tests are disabled: failed to connect to mongo at ${mongoURL}; please provide an URL to the ` +
           'mongo you wish to use to run these tests as the environment variable MIGSI_MONGO_URL ' +
@@ -72,7 +72,7 @@ describe('mongo-storage-test', function () {
       fs.writeFileSync(path.join(__dirname, '..', 'test-workspace', 'migration.migsi.js'), migrationBody, 'UTF-8')
       await runMigrations()
 
-      const conn = await MongoClient.connect(mongoURL)
+      const conn = await MongoClient.connect(mongoURL) as any
       assert.equal(await conn.collection(collectionName).count({}), 1)
       await conn.close()
     })

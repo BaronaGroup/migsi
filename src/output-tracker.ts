@@ -33,8 +33,8 @@ function enableOutputTracking() {
     stderr: []
   }
 
-  ;(<any>process.stdout).write = customWrite('stdout', process.stdout, defaultStdoutWrite)
-  ;(<any>process.stderr).write = customWrite('stderr', process.stderr, defaultStderrWrite)
+  ;(<any>process.stdout).write = customWrite('stdout', process.stdout as any as Writable, defaultStdoutWrite)
+  ;(<any>process.stderr).write = customWrite('stderr', process.stderr as any as Writable, defaultStderrWrite)
 
   return {
     output,
