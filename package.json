@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@types/chai": "4.2.5",
-    "@types/cli-color": "0.3.29",
+    "@types/cli-color": "0.3.30",
     "@types/inquirer": "6.5.0",
     "@types/lodash": "4.14.149",
     "@types/mocha": "5.2.7",
