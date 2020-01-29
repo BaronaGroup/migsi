@@ -12,7 +12,7 @@
     "@types/cli-color": "0.3.30",
     "@types/inquirer": "6.5.0",
     "@types/lodash": "4.14.149",
-    "@types/mocha": "5.2.7",
+    "@types/mocha": "7.0.1",
     "@types/mongodb": "3.3.15",
     "@types/node": "9.6.51",
     "@typescript-eslint/parser": "2.18.0",
