@@ -13,7 +13,7 @@
     "@types/inquirer": "6.5.0",
     "@types/lodash": "4.14.149",
     "@types/mocha": "7.0.2",
-    "@types/mongodb": "3.5.6",
+    "@types/mongodb": "3.5.8",
     "@types/node": "9.6.51",
     "@typescript-eslint/parser": "2.28.0",
     "background-eslint-hook": "1.0.0",
