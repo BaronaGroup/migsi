@@ -27,7 +27,7 @@
     "npm-release": "1.0.0",
     "post-commit": "0.0.1",
     "source-map-support": "0.5.19",
-    "typescript": "3.6.4"
+    "typescript": "3.9.7"
   },
   "license": "MIT",
   "author": {
