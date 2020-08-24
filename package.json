@@ -11,7 +11,7 @@
     "@types/chai": "4.2.12",
     "@types/cli-color": "0.3.30",
     "@types/inquirer": "6.5.0",
-    "@types/lodash": "4.14.159",
+    "@types/lodash": "4.14.160",
     "@types/mocha": "7.0.2",
     "@types/mongodb": "3.5.26",
     "@types/node": "9.6.51",
