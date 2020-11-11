@@ -5,7 +5,6 @@ import {MongoClient, Db, Collection} from 'mongodb'
 import {delay} from '../src/utils'
 import logger from '../src/default-logger'
 
-
 describe('mongo-storage-test', function () {
 
   const defaultMongoURL = 'mongodb://localhost/migsi-test'
@@ -19,7 +18,7 @@ describe('mongo-storage-test', function () {
     before(async function () {
       let connection
       try {
-        connection = await MongoClient.connect(mongoURL) as any
+        connection = await MongoClient.connect(mongoURL)
       } catch (err) {
         logger.warn(`Mongo-storage tests are disabled: failed to connect to mongo at ${mongoURL}; please provide an URL to the ` +
           'mongo you wish to use to run these tests as the environment variable MIGSI_MONGO_URL ' +
@@ -27,9 +26,10 @@ describe('mongo-storage-test', function () {
       }
       if (connection) {
         try {
+          const db = connection.db()
           await Promise.all([
-            connection.collection(customCollectionName).remove({}),
-            connection.collection(defaultCollectionName).remove({}),
+            db.collection(customCollectionName).remove({}),
+            db.collection(defaultCollectionName).remove({}),
           ])
           await delay(200) // another connection might not see the changes immediately, so we delay a bit here
           enabled = true
@@ -74,15 +74,15 @@ describe('mongo-storage-test', function () {
       await delay(200) // another connection might not see the changes immediately, so we delay the assert a bit
       const db = await MongoClient.connect(mongoURL)
       try {
-        assert.equal(await getCollection(db as any, customCollectionName).count({}), 1)
+        assert.equal(await getCollection(db , customCollectionName).count({}), 1)
       } finally {
         await db.close()
       }
     })
   })
 
-  function getCollection(db: Db, collectionName: string): Collection<any> {
-    return (db as any).collection(collectionName)
+  function getCollection(client: MongoClient, collectionName: string): Collection<any> {
+    return client.db().collection(collectionName)
   }
 
 })
