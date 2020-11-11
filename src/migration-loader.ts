@@ -134,6 +134,9 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
   try {
     const sortedMigrations = sortMigrations(migrations)
     checkMigrationOrderValidity(sortedMigrations, dependenciesUpdated)
+    if (config.hooks && config.hooks.migrationsLoaded) {
+      return await config.hooks.migrationsLoaded(sortedMigrations)
+    }
     return sortedMigrations
   } catch(err) {
     if (!dependenciesUpdated) {

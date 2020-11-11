@@ -32,6 +32,9 @@ export interface Config {
   disableOutputTracking?: boolean
   logger?: LoggerInterface,
   migsiStatusFile?: string
+  hooks?: {
+    migrationsLoaded?(sortedMigrations: Migration[]): Migration[] | Promise<Migration[]>
+  }
 }
 
 
