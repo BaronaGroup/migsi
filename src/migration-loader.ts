@@ -118,7 +118,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
     const migration = Object.assign({}, past || {}, migrationBase, loadMigration(file))
     migration.migsiVersion = MIGSI_DATA_VERSION
     if (past) {
-      migration.versionChanged = migration.version !== past.version
+      migration.versionChanged = migration.version !== null && migration.version !== past.version
       migration.hasBeenRun = past.hasBeenRun || past.migsiVersion < 2
     }
     if (await isArchived(migration as Migration)) {
