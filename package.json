@@ -14,7 +14,7 @@
     "@types/lodash": "4.14.168",
     "@types/mocha": "7.0.2",
     "@types/mongodb": "3.6.7",
-    "@types/node": "9.6.51",
+    "@types/node": "9.6.61",
     "@typescript-eslint/parser": "4.12.0",
     "background-eslint-hook": "1.0.0",
     "chai": "4.3.0",
