@@ -10,7 +10,7 @@
   "devDependencies": {
     "@types/chai": "4.2.15",
     "@types/cli-color": "0.3.30",
-    "@types/inquirer": "6.5.0",
+    "@types/inquirer": "7.3.1",
     "@types/lodash": "4.14.168",
     "@types/mocha": "7.0.2",
     "@types/mongodb": "3.6.8",
