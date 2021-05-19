@@ -118,7 +118,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
     const migration = Object.assign({}, past || {}, migrationBase, loadMigration(file))
     migration.migsiVersion = MIGSI_DATA_VERSION
     if (past) {
-      migration.versionChanged = migration.version !== past.version
+      migration.versionChanged = migration.version !== null && migration.version !== past.version
       migration.hasBeenRun = past.hasBeenRun || past.migsiVersion < 2
     }
     if (await isArchived(migration as Migration)) {
@@ -134,6 +134,9 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
   try {
     const sortedMigrations = sortMigrations(migrations)
     checkMigrationOrderValidity(sortedMigrations, dependenciesUpdated)
+    if (config.hooks && config.hooks.migrationsLoaded) {
+      return await config.hooks.migrationsLoaded(sortedMigrations)
+    }
     return sortedMigrations
   } catch(err) {
     if (!dependenciesUpdated) {
