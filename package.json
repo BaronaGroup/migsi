@@ -58,7 +58,7 @@
     "lodash": "4.17.21",
     "moment": "^2.22.0",
     "mongodb": "3.6.3",
-    "node-getopt-long": "^0.3.2"
+    "node-getopt-long": "^0.4.0"
   },
   "types": "build/es2017/core.d.ts"
 }
