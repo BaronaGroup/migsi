@@ -186,7 +186,7 @@ describe('command-line-tool-test', function () {
             const desiredRunDate = moment().subtract(Math.pow(2, i), 'hours').toDate()
             createMigration('m' + i, {
               desiredRunDate, i, run: function () {
-                console.log('I am', this.i)
+                console.log('I am ' + this.i)
               }
             })
           }
