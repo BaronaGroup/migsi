@@ -52,13 +52,13 @@
   "main": "lib/migsi.js",
   "bin": "./bin/migsi",
   "dependencies": {
-    "cli-color": "^1.2.0",
+    "cli-color": "2.0.0",
     "dependency-solver": "^1.0.6",
-    "inquirer": "^6.0.0",
+    "inquirer": "8.1.0",
     "lodash": "4.17.21",
-    "moment": "^2.22.0",
+    "moment": "2.29.1",
     "mongodb": "3.6.9",
-    "node-getopt-long": "^0.3.2"
+    "node-getopt-long": "0.4.0"
   },
   "types": "build/es2017/core.d.ts"
 }
