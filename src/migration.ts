@@ -49,6 +49,6 @@ export interface Migration {
 
 export interface RunnableMigration extends Migration {
   run: (...params: any[]) => Promise<void>
-  rollback: (...params: any[]) => Promise<void>
+  rollback?: (...params: any[]) => Promise<void>
 
 }

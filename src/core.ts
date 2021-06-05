@@ -238,7 +238,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         migration.hasBeenRun = false
         migration.hasActuallyBeenRun = false
         if (migration.failedToRun) await config.storage.updateStatus(migration)
-        await trackOutput(migration, 'rollback', () => migration.rollback(...supportObjs))
+        await trackOutput(migration, 'rollback', () => migration.rollback!(...supportObjs))
         await config.storage.updateStatus(migration)
         const after = new Date(),
           durationMsec = after.valueOf() - before.valueOf()
