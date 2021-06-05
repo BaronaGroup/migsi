@@ -36,7 +36,7 @@ describe('command-line-tool-test', function () {
         prefixAlgorithm: () => ''
       }
    `,
-      'UTF-8'
+      'utf-8'
     )
     loadConfig(configFile)
   })
@@ -57,7 +57,7 @@ describe('command-line-tool-test', function () {
         `
       module.exports = { run() { throw new Error('Is custom') }}
       `,
-        'UTF-8'
+        'utf-8'
       )
 
       await run(`node build/test/src/command-line-tool create --config=${configFile} --name=third --template=custom`)

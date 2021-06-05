@@ -226,7 +226,7 @@ function* findMigrationFilesFrom(subdir: string): IterableIterator<string> {
 
 function getHash(filename: string) {
   const hash = crypto.createHash('sha256')
-  hash.update(fs.readFileSync(filename, 'UTF-8'))
+  hash.update(fs.readFileSync(filename, 'utf-8'))
   return hash.digest('hex')
 }
 

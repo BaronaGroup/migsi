@@ -37,7 +37,7 @@ async function loadStatus(): Promise<MigsiStatus> {
   const contents =
     filename && exists
       ? await new Promise<string>((resolve, reject) =>
-          fs.readFile(filename, 'UTF-8', (err, rawData) => {
+          fs.readFile(filename, 'utf-8', (err, rawData) => {
             if (err) return reject(err)
             resolve(rawData)
           })
@@ -60,7 +60,7 @@ async function saveStatus(status: MigsiStatus) {
   const filename = getDir('migsiStatusFile')
   const json = JSON.stringify(status, null, 2)
   await new Promise<void>((resolve, reject) =>
-    fs.writeFile(filename, json, 'UTF-8', (err) => {
+    fs.writeFile(filename, json, 'utf-8', (err) => {
       if (err) return reject(err)
       resolve()
     })

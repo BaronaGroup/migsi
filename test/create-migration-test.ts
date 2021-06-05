@@ -33,7 +33,7 @@ describe('create-migration-test.js', function () {
       const templateDir = path.join(__dirname, '../test-workspace')
       configure({ templateDir })
       const templateData = `module.exports = { run() { throw new Error('custom')}}`
-      fs.writeFileSync(templateDir + '/custom.js', templateData, 'UTF-8')
+      fs.writeFileSync(templateDir + '/custom.js', templateData, 'utf-8')
       await core.createMigrationScript('drei', 'custom')
 
       await expectFailure(runMigrations(), (err) => assert.equal(err.message, 'custom'))
@@ -43,7 +43,7 @@ describe('create-migration-test.js', function () {
       const templateDir = path.join(__dirname, '../test-workspace')
       configure({ templateDir })
       const templateData = `module.exports = { run() { throw new Error('custom')}}`
-      fs.writeFileSync(templateDir + '/custom.template.js', templateData, 'UTF-8')
+      fs.writeFileSync(templateDir + '/custom.template.js', templateData, 'utf-8')
       await core.createMigrationScript('drei', 'custom')
 
       await expectFailure(runMigrations(), (err) => assert.equal(err.message, 'custom'))

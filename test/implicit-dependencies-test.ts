@@ -71,7 +71,7 @@ describe('implicit-dependencies-test', function () {
       return testUtils.runImpl(this.friendlyName)
     }}
     `
-    fs.writeFileSync(templateDir + '/' + templateName + '.template.js', templateData, 'UTF-8')
+    fs.writeFileSync(templateDir + '/' + templateName + '.template.js', templateData, 'utf-8')
   }
 
   async function checkDependencyArray(migrationName: string, expected: string[]) {
