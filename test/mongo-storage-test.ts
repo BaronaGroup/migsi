@@ -1,12 +1,11 @@
-import {wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure} from './test-utils'
-import mongoStorage, {defaultCollectionName} from '../src/storage/mongo'
-import {assert} from 'chai'
-import {MongoClient, Db, Collection} from 'mongodb'
-import {delay} from '../src/utils'
+import { wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure } from './test-utils'
+import mongoStorage, { defaultCollectionName } from '../src/storage/mongo'
+import { assert } from 'chai'
+import { MongoClient, Db, Collection } from 'mongodb'
+import { delay } from '../src/utils'
 import logger from '../src/default-logger'
 
 describe('mongo-storage-test', function () {
-
   const defaultMongoURL = 'mongodb://localhost/migsi-test'
   const mongoURL = process.env.MIGSI_MONGO_URL || defaultMongoURL
   const customCollectionName = 'anothercollection'
@@ -14,15 +13,16 @@ describe('mongo-storage-test', function () {
   let enabled = false
 
   describe('mongo-storage-test', function () {
-
     before(async function () {
       let connection
       try {
         connection = await MongoClient.connect(mongoURL)
       } catch (err) {
-        logger.warn(`Mongo-storage tests are disabled: failed to connect to mongo at ${mongoURL}; please provide an URL to the ` +
-          'mongo you wish to use to run these tests as the environment variable MIGSI_MONGO_URL ' +
-          `to override the default (${defaultMongoURL})`)
+        logger.warn(
+          `Mongo-storage tests are disabled: failed to connect to mongo at ${mongoURL}; please provide an URL to the ` +
+            'mongo you wish to use to run these tests as the environment variable MIGSI_MONGO_URL ' +
+            `to override the default (${defaultMongoURL})`
+        )
       }
       if (connection) {
         try {
@@ -36,7 +36,6 @@ describe('mongo-storage-test', function () {
         } catch (err) {
           logger.error(err.stack)
           throw new Error(err)
-
         } finally {
           await connection.close()
         }
@@ -47,18 +46,20 @@ describe('mongo-storage-test', function () {
 
     it('can be given a mongo URL', async function () {
       if (!enabled) return this.skip()
-      configure({storage: mongoStorage(mongoURL)})
+      configure({ storage: mongoStorage(mongoURL) })
     })
 
     it('throws without an URL', async function () {
-      await expectFailure(async function () {
-        configure({storage: mongoStorage('')})
-      }())
+      await expectFailure(
+        (async function () {
+          configure({ storage: mongoStorage('') })
+        })()
+      )
     })
 
     it('works', async function () {
       if (!enabled) return this.skip()
-      configure({storage: mongoStorage(mongoURL)})
+      configure({ storage: mongoStorage(mongoURL) })
       await createMigration('a')
       await runMigrations()
       await createMigration('b')
@@ -68,13 +69,13 @@ describe('mongo-storage-test', function () {
 
     it('is possible to use another collection', async function () {
       if (!enabled) return this.skip()
-      configure({storage: mongoStorage(mongoURL, customCollectionName)})
+      configure({ storage: mongoStorage(mongoURL, customCollectionName) })
       await createMigration('a')
       await runMigrations()
       await delay(200) // another connection might not see the changes immediately, so we delay the assert a bit
       const db = await MongoClient.connect(mongoURL)
       try {
-        assert.equal(await getCollection(db , customCollectionName).count({}), 1)
+        assert.equal(await getCollection(db, customCollectionName).count({}), 1)
       } finally {
         await db.close()
       }
@@ -84,5 +85,4 @@ describe('mongo-storage-test', function () {
   function getCollection(client: MongoClient, collectionName: string): Collection<any> {
     return client.db().collection(collectionName)
   }
-
 })

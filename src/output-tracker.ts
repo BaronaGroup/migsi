@@ -1,17 +1,17 @@
 import * as _ from 'lodash'
-import {config} from './config'
-import {Writable} from 'stream'
-import {Migration, OutputLine} from './migration'
+import { config } from './config'
+import { Writable } from 'stream'
+import { Migration, OutputLine } from './migration'
 
-type Context = "run" | "rollback"
-type StreamName = "stdout" | "stderr"
+type Context = 'run' | 'rollback'
+type StreamName = 'stdout' | 'stderr'
 
 interface OutputBase {
   stdout: OutputLine[]
   stderr: OutputLine[]
 }
 
-export const trackOutput = async function(migration : Migration, runType : Context, run : () => Promise<any>) {
+export const trackOutput = async function (migration: Migration, runType: Context, run: () => Promise<any>) {
   if (config.disableOutputTracking) return await run()
 
   const tracker = enableOutputTracking()
@@ -28,9 +28,9 @@ function enableOutputTracking() {
   const defaultStdoutWrite = process.stdout.write
   const defaultStderrWrite = process.stderr.write
 
-  const output : OutputBase = {
+  const output: OutputBase = {
     stdout: [],
-    stderr: []
+    stderr: [],
   }
 
   ;(<any>process.stdout).write = customWrite('stdout', process.stdout as any as Writable, defaultStdoutWrite)
@@ -38,12 +38,12 @@ function enableOutputTracking() {
 
   return {
     output,
-    finish
+    finish,
   }
 
-  function customWrite(context: StreamName, stream : Writable, defaultImpl: any) {
-    return function(chunk: any, encoding: any, callback : any) {
-      output[context].push({timestamp: new Date().valueOf(), data: chunk.toString('UTF-8')})
+  function customWrite(context: StreamName, stream: Writable, defaultImpl: any) {
+    return function (chunk: any, encoding: any, callback: any) {
+      output[context].push({ timestamp: new Date().valueOf(), data: chunk.toString('UTF-8') })
       return defaultImpl.call(stream, chunk, encoding, callback)
     }
   }
@@ -55,10 +55,21 @@ function enableOutputTracking() {
 }
 
 export const outputProcessor = {
-  makeLinear(migration : Migration, category : Context) {
-    return _.sortBy([
-      ..._.get(migration, ['output', category, 'stdout'], []).map(({timestamp, data} : OutputLine) => ({timestamp, data, stream: 'stdout'})),
-      ..._.get(migration, ['output', category, 'stderr'], []).map(({timestamp, data} : OutputLine) => ({timestamp, data, stream: 'stderr'}))
-    ], 'timestamp')
-  }
+  makeLinear(migration: Migration, category: Context) {
+    return _.sortBy(
+      [
+        ..._.get(migration, ['output', category, 'stdout'], []).map(({ timestamp, data }: OutputLine) => ({
+          timestamp,
+          data,
+          stream: 'stdout',
+        })),
+        ..._.get(migration, ['output', category, 'stderr'], []).map(({ timestamp, data }: OutputLine) => ({
+          timestamp,
+          data,
+          stream: 'stderr',
+        })),
+      ],
+      'timestamp'
+    )
+  },
 }

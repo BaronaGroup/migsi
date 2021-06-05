@@ -3,10 +3,10 @@ import * as fs from 'fs'
 import * as dependencySolver from 'dependency-solver'
 import * as _ from 'lodash'
 import * as crypto from 'crypto'
-import {config, getDir} from './config'
-import {getLogger} from './utils'
-import {isArchived} from './migsi-status'
-import {Migration} from './migration'
+import { config, getDir } from './config'
+import { getLogger } from './utils'
+import { isArchived } from './migsi-status'
+import { Migration } from './migration'
 
 const MIGSI_DATA_VERSION = 3
 
@@ -135,7 +135,7 @@ export const findMigrations = async function findMigrations(dependenciesUpdated 
         !config.allowRerunningAllMigrations &&
         (past.hasBeenRun || past.migsiVersion < 2)
       ) {
-        return Object.assign({}, migrationBase, {hasBeenRun: true}, past, {toBeRun: false, eligibleToRun: false})
+        return Object.assign({}, migrationBase, { hasBeenRun: true }, past, { toBeRun: false, eligibleToRun: false })
       }
       if (past && past.hasBeenRun && past.migsiVersion < 3) past.hasActuallyBeenRun = true
       const migration: Migration = Object.assign({}, past || {}, migrationBase, loadMigration(file))

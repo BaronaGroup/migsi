@@ -1,7 +1,6 @@
 import * as _ from 'lodash'
-import {Config, config} from './config'
-import {Migration} from './migration'
-
+import { Config, config } from './config'
+import { Migration } from './migration'
 
 export interface SetuppableUsingDeclaration {
   setup: (config: Config) => Promise<ActiveUsingDeclaration>
@@ -17,48 +16,49 @@ interface CloseableUsing {
 
 type UnopenedUsingDeclaration = OpenableUsing | ((config: Config) => Promise<any>)
 export type ActiveUsingDeclaration =
-  OpenableUsing
+  | OpenableUsing
   | CloseableUsing
   | (OpenableUsing & CloseableUsing)
   | ((config: Config) => Promise<any>)
 
 interface Using {
-  identity: AnyUsingDeclaration,
-  value: any,
+  identity: AnyUsingDeclaration
+  value: any
   implementation: ActiveUsingDeclaration
 }
 
-
-interface UsingImplementation {
-
-}
+interface UsingImplementation {}
 
 export type AnyUsingDeclaration = SetuppableUsingDeclaration | ActiveUsingDeclaration | string
-
 
 export default class SupportManager {
   remainingMigrations: Migration[]
   prepared: Using[]
 
-  constructor(migrations : Migration[]) {
+  constructor(migrations: Migration[]) {
     this.remainingMigrations = [...migrations]
     this.prepared = []
   }
 
-  async prepare(migration : Migration) {
+  async prepare(migration: Migration) {
     this.remainingMigrations.splice(this.remainingMigrations.indexOf(migration), 1)
     for (let support of migration.using || []) {
       await this.prepareSupport(support)
     }
-    return (migration.using || []).map(support => {
-      const found = this.prepared.find(preparedSupport => preparedSupport.identity === support)
+    return (migration.using || []).map((support) => {
+      const found = this.prepared.find((preparedSupport) => preparedSupport.identity === support)
       if (!found) throw new Error('Internal error')
       return found.value
     })
   }
 
   async finish() {
-    const toClose = this.prepared.filter(preparedSupport => !this.remainingMigrations.some(migration => (migration.using || []).some(support => preparedSupport.identity === support)))
+    const toClose = this.prepared.filter(
+      (preparedSupport) =>
+        !this.remainingMigrations.some((migration) =>
+          (migration.using || []).some((support) => preparedSupport.identity === support)
+        )
+    )
     for (let supportToClose of toClose) {
       if (isCloseable(supportToClose.implementation)) {
         await supportToClose.implementation.close(supportToClose.value)
@@ -71,32 +71,34 @@ export default class SupportManager {
     }
     this.prepared = _.difference(this.prepared, toClose)
 
-
-    function isCloseable(implementation : ActiveUsingDeclaration) : implementation is CloseableUsing {
+    function isCloseable(implementation: ActiveUsingDeclaration): implementation is CloseableUsing {
       return !!(implementation as CloseableUsing).close
     }
   }
 
-  async prepareSupport(identity : AnyUsingDeclaration) {
-    if (this.prepared.some(preparedSupport => preparedSupport.identity === identity)) {
+  async prepareSupport(identity: AnyUsingDeclaration) {
+    if (this.prepared.some((preparedSupport) => preparedSupport.identity === identity)) {
       return
     }
     const rawImplementation = loadSupport(identity)
     if (!rawImplementation) throw new Error('Could not find code dependency ' + identity)
-    const implementation = <UnopenedUsingDeclaration>(isSetuppable(rawImplementation) ? await rawImplementation.setup(config) : rawImplementation)
+    const implementation = <UnopenedUsingDeclaration>(
+      (isSetuppable(rawImplementation) ? await rawImplementation.setup(config) : rawImplementation)
+    )
 
     const value = await (isOpenable(implementation) ? implementation.open(config) : implementation(config))
 
-    this.prepared.push({identity, value, implementation})
+    this.prepared.push({ identity, value, implementation })
 
-    function isSetuppable(implementation : SetuppableUsingDeclaration | ActiveUsingDeclaration) : implementation is SetuppableUsingDeclaration {
+    function isSetuppable(
+      implementation: SetuppableUsingDeclaration | ActiveUsingDeclaration
+    ): implementation is SetuppableUsingDeclaration {
       return !!(implementation as SetuppableUsingDeclaration).setup
     }
 
-    function isOpenable(implementation : ActiveUsingDeclaration) : implementation is OpenableUsing {
+    function isOpenable(implementation: ActiveUsingDeclaration): implementation is OpenableUsing {
       return !!(implementation as OpenableUsing).open
     }
-
   }
 
   async destroy() {
@@ -105,11 +107,9 @@ export default class SupportManager {
   }
 }
 
-function noop() {
+function noop() {}
 
-}
-
-function loadSupport(identity : AnyUsingDeclaration) {
+function loadSupport(identity: AnyUsingDeclaration) {
   if (typeof identity === 'string') {
     const usings = config.using
     return (usings || {})[identity]

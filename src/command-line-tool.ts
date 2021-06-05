@@ -1,21 +1,20 @@
 import * as core from './core'
 import * as nodeGetoptLong from 'node-getopt-long'
-import {config, getDir, setupConfig, findAndLoadConfig} from './config'
+import { config, getDir, setupConfig, findAndLoadConfig } from './config'
 import * as path from 'path'
 import * as inquirer from 'inquirer'
 import * as _ from 'lodash'
 import * as fs from 'fs'
-import {outputProcessor} from './output-tracker'
+import { outputProcessor } from './output-tracker'
 import * as cliColor from 'cli-color'
 import * as moment from 'moment'
 import defaultLogger from './default-logger'
-import {getLogger} from './utils'
-import {OutputLine} from './migration'
+import { getLogger } from './utils'
+import { OutputLine } from './migration'
 
 export interface OutputLineWithStream extends OutputLine {
   stream: string
 }
-
 
 interface Options {
   config?: string
@@ -24,12 +23,12 @@ interface Options {
 type NoOptions = Options
 
 interface Command {
-  options: nodeGetoptLong.Option[],
+  options: nodeGetoptLong.Option[]
   action: (args: Options) => Promise<void>
 }
 
 interface OutputOptions extends Options {
-  name?: string,
+  name?: string
   since?: string
   until?: string
   failed?: boolean
@@ -38,8 +37,8 @@ interface OutputOptions extends Options {
 
 interface RunOptions extends Options {
   //{production = false, yes: confirmed = false, 'dry-run': dryRun}
-  production?: boolean,
-  yes?: boolean,
+  production?: boolean
+  yes?: boolean
   'dry-run'?: boolean
 }
 
@@ -63,13 +62,13 @@ interface CommandList {
 }
 
 const commands: CommandList = {
-  'list': <Command>list(),
-  'create': <Command>create(),
-  'run': <Command>run(),
+  list: <Command>list(),
+  create: <Command>create(),
+  run: <Command>run(),
   'ensure-no-development-scripts': <Command>ensureNoDevelopmentScripts(),
   'create-template': <Command>createTemplate(),
-  'output': <Command>output(),
-  'archive': <Command>archive()
+  output: <Command>output(),
+  archive: <Command>archive(),
 }
 
 async function runApp() {
@@ -82,7 +81,7 @@ async function runApp() {
   await cmdLine.command.action(cmdLine.options)
 }
 
-runApp().catch(err => {
+runApp().catch((err) => {
   if (!err.printed) {
     getLogger().error(err.stack || err)
   }
@@ -93,19 +92,18 @@ function parseCommandLine() {
   const command = process.argv[2]
   process.argv.splice(2, 1)
   let cmdImpl = commands[command]
-  if (!cmdImpl) throw new Error('Invalid command: ' + command + '; available commands are ' + Object.keys(commands).join(', '))
+  if (!cmdImpl)
+    throw new Error('Invalid command: ' + command + '; available commands are ' + Object.keys(commands).join(', '))
 
-  const defaultOptions = [[
-    'config|conf|c=s', 'Configuration file'
-  ]]
+  const defaultOptions = [['config|conf|c=s', 'Configuration file']]
 
   const options = <Options>nodeGetoptLong.options((cmdImpl.options || []).concat(defaultOptions), {
-    name: 'migsi'
+    name: 'migsi',
   })
 
   return {
     command: cmdImpl,
-    options
+    options,
   }
 }
 
@@ -115,16 +113,19 @@ function list() {
     action: async function (options: NoOptions) {
       const migrations = await core.loadAllMigrations()
       for (let migration of migrations) {
-        const runStatus =
-        migration.toBeRun ? 'to-be-run'
-          : migration.runDate ? migration.runDate
-          : migration.hasBeenRun ? 'has-been-run'
-            : migration.archived ? 'archived'
-                : 'unknown-state'
+        const runStatus = migration.toBeRun
+          ? 'to-be-run'
+          : migration.runDate
+          ? migration.runDate
+          : migration.hasBeenRun
+          ? 'has-been-run'
+          : migration.archived
+          ? 'archived'
+          : 'unknown-state'
 
         getLogger().info(migration.migsiName, migration.inDevelopment ? 'dev ' : 'prod', runStatus)
       }
-    }
+    },
   }
 }
 
@@ -135,15 +136,16 @@ function output() {
       ['since|s=s', 'Date/datetime (ISO format only) for when to start listing output from'],
       ['until|u=s', 'Date/datetime (ISO format only) for when to stop listing output'],
       ['failed|f', 'List output for the latest failed migration, if any'],
-      ['raw|r', 'Do not add timestamps and streams to output']
+      ['raw|r', 'Do not add timestamps and streams to output'],
     ],
-    action: async ({name, since: rawSince, until: rawUntil, failed, raw}: OutputOptions) => {
+    action: async ({ name, since: rawSince, until: rawUntil, failed, raw }: OutputOptions) => {
       const logger = getLogger()
       const since = parseDate(rawSince),
         until = parseDate(rawUntil, 1)
 
-      const migrations = (await core.filterMigrations({name, since, until, failed}))
-        .filter(m => m.hasBeenRun || m.failedToRun)
+      const migrations = (await core.filterMigrations({ name, since, until, failed })).filter(
+        (m) => m.hasBeenRun || m.failedToRun
+      )
 
       for (let migration of migrations) {
         const linearRunOutput = outputProcessor.makeLinear(migration, 'run')
@@ -178,9 +180,16 @@ function output() {
         const lastChar = line.data[line.data.length - 1]
         const terminator = lastChar === '\n' || lastChar === '\r' ? '' : '\n'
         const streamColor = line.stream === 'stdout' ? 78 : 161
-        return [cliColor.xterm(72)(new Date(line.timestamp).toISOString()), ' ', cliColor.xterm(streamColor)(line.stream), ' ', line.data, terminator].join('')
+        return [
+          cliColor.xterm(72)(new Date(line.timestamp).toISOString()),
+          ' ',
+          cliColor.xterm(streamColor)(line.stream),
+          ' ',
+          line.data,
+          terminator,
+        ].join('')
       }
-    }
+    },
   }
 
   function parseDate(dateStr: string | undefined, dayOffset = 0) {
@@ -197,37 +206,43 @@ function output() {
     }
 
     const extractor = /^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d)(?::(\d\d)(?:\.(\d{3})))?)?$/
-    const [, year = '', month = '', day = '', hour = '0', minute = '0', second = '0', msec = '0'] = dateStr.match(extractor) || []
+    const [, year = '', month = '', day = '', hour = '0', minute = '0', second = '0', msec = '0'] =
+      dateStr.match(extractor) || []
 
     if (!year) throw new Error('Invalid date format')
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day) + dayOffset, parseInt(hour), parseInt(minute), parseInt(second), parseInt(msec))
+    return new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day) + dayOffset,
+      parseInt(hour),
+      parseInt(minute),
+      parseInt(second),
+      parseInt(msec)
+    )
   }
 }
 
 function createTemplate() {
   return {
-    options: [
-      ['name|n=s', 'Name for the template']
-    ],
-    action: async function ({name: rawName}: CreateTemplateOptions) {
-      const name = rawName || await queryName()
+    options: [['name|n=s', 'Name for the template']],
+    action: async function ({ name: rawName }: CreateTemplateOptions) {
+      const name = rawName || (await queryName())
 
       const filename = await core.createTemplate(name)
       getLogger().info('Template created as ', path.relative(process.cwd(), filename))
 
       async function queryName() {
-        const {name} = (await inquirer.prompt({
+        const { name } = (await inquirer.prompt({
           message: 'Please enter for template',
           name: 'name',
           prefix: '',
-          suffix: ':'
+          suffix: ':',
         })) as any
         return name
       }
-    }
+    },
   }
 }
-
 
 function archive() {
   return {
@@ -236,12 +251,12 @@ function archive() {
       const migrations = await core.loadAllMigrations()
       for (let migration of migrations) {
         if (!migration.archived) {
-          const {confirmed}: {confirmed: boolean} = (await inquirer.prompt({
+          const { confirmed }: { confirmed: boolean } = (await inquirer.prompt({
             message: 'Archive ' + migration.friendlyName + '?',
             type: 'confirm',
             name: 'confirmed',
             prefix: '',
-            suffix: ':'
+            suffix: ':',
           })) as any
 
           if (confirmed) {
@@ -250,24 +265,23 @@ function archive() {
           }
         }
       }
-    }
+    },
   }
 }
-
 
 function create() {
   return {
     options: [
       ['friendlyName|name|n=s', 'Friendly name for migration script'],
-      ['template|t=s', 'Template name']
+      ['template|t=s', 'Template name'],
     ],
-    async action({friendlyName, template = 'default'}: CreateOptions) {
+    async action({ friendlyName, template = 'default' }: CreateOptions) {
       if (!friendlyName) {
         return await createWizard()
       }
       const filename = await core.createMigrationScript(friendlyName, template)
       getLogger().info('Migration script created: ' + filename)
-    }
+    },
   }
 }
 
@@ -278,29 +292,29 @@ async function createWizard() {
     {
       name: 'scriptName',
       message: 'Migration script name (does not have to look like a filename)',
-      validate: value => !!value || 'Please enter a name for the script',
-      prefix: ''
+      validate: (value) => !!value || 'Please enter a name for the script',
+      prefix: '',
     },
     {
       name: 'template',
       message: 'Select a template for the migration script',
       type: 'list',
       choices: _.map(templates, 'name'),
-      prefix: ''
-    }
+      prefix: '',
+    },
   ])) as any
 
-  const find = templates.find(item => item.name === answers.template)
+  const find = templates.find((item) => item.name === answers.template)
   if (!find) throw new Error('Internal error')
   const filename = await core.createMigrationScript(answers.scriptName, find.refName)
   getLogger().info('The script can be found to be edited at ' + path.relative(process.cwd(), filename))
 }
 
 function getTemplates() {
-  const customTemplateDir = getDir("templateDir")
+  const customTemplateDir = getDir('templateDir')
   const templates = [...getTemplatesFrom(customTemplateDir)].map(getTemplateInfo)
-  if (!templates.some(item => item.refName === 'default')) {
-    templates.push({name: '(simple default)', refName: 'default'})
+  if (!templates.some((item) => item.refName === 'default')) {
+    templates.push({ name: '(simple default)', refName: 'default' })
   }
   return templates
 }
@@ -308,7 +322,7 @@ function getTemplates() {
 function getTemplateInfo(item: TemplateInfo) {
   if (!item.filename) throw new Error('Internal error')
   const template = require(item.filename)
-  return Object.assign({}, item, {name: template.templateName || item.refName})
+  return Object.assign({}, item, { name: template.templateName || item.refName })
 }
 
 function* getTemplatesFrom(dir: string, prefix = ''): IterableIterator<TemplateInfo> {
@@ -321,9 +335,9 @@ function* getTemplatesFrom(dir: string, prefix = ''): IterableIterator<TemplateI
     if (fs.statSync(fullFilename).isDirectory()) {
       yield* getTemplatesFrom(fullFilename, path.join(prefix, dir))
     } else if (isTemplateJS.test(file) || isTemplateTS.test(file)) {
-      yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 12))}
+      yield { filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 12)) }
     } else if (isJS.test(file) || isTS.test(file)) {
-      yield {filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 3))}
+      yield { filename: fullFilename, refName: path.join(prefix, file.substring(0, file.length - 3)) }
     }
   }
 }
@@ -333,11 +347,11 @@ function run() {
     options: [
       ['production|prod|p', 'Only run production scripts'],
       ['yes', 'Automatically confirm deployment'],
-      ['dry-run|d', 'Pretend to run migrations without actually doing so']
+      ['dry-run|d', 'Pretend to run migrations without actually doing so'],
     ],
-    async action({production = false, yes: confirmed = false, 'dry-run': dryRun}: RunOptions) {
-      await core.runMigrations({production, confirmation: confirmed ? undefined : confirmation, dryRun})
-    }
+    async action({ production = false, yes: confirmed = false, 'dry-run': dryRun }: RunOptions) {
+      await core.runMigrations({ production, confirmation: confirmed ? undefined : confirmation, dryRun })
+    },
   }
 }
 
@@ -345,24 +359,24 @@ function ensureNoDevelopmentScripts() {
   return {
     async action(options: Options) {
       const migrations = await core.loadAllMigrations()
-      if (migrations.some(mig => mig.inDevelopment)) {
+      if (migrations.some((mig) => mig.inDevelopment)) {
         throw new Error('There are migration scripts still in development.')
       }
-    }
+    },
   }
 }
 
 async function confirmation() {
   //if (require('tty').isatty(process.stdin)) return true
   if (process.argv.includes('--yes')) return true
-  const {confirmed} = (await inquirer.prompt([
+  const { confirmed } = (await inquirer.prompt([
     {
       message: 'Do you want to run these migrations?',
       type: 'confirm',
       name: 'confirmed',
       prefix: '',
-      default: false
-    }
+      default: false,
+    },
   ])) as any
   return confirmed
 }

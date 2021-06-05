@@ -1,13 +1,13 @@
-import {Config} from './config'
-import {AnyUsingDeclaration} from './support-manager'
+import { Config } from './config'
+import { AnyUsingDeclaration } from './support-manager'
 
 export interface OutputLine {
-  data: string,
+  data: string
   timestamp: number
 }
 
 interface ExceptionInfo {
-  message: string,
+  message: string
   stack: string
 }
 
@@ -15,21 +15,20 @@ export interface TemplateVariables {
   friendlyName: string
 }
 
-
 export interface Migration {
-  using: AnyUsingDeclaration[] ,
-  migsiName: string,
-  dependencies: string[],
-  toBeRun: boolean,
-  eligibleToRun: boolean,
-  inDevelopment: boolean,
-  migsiVersion: number,
-  hasBeenRun: boolean,
-  hasActuallyBeenRun: boolean,
+  using: AnyUsingDeclaration[]
+  migsiName: string
+  dependencies: string[]
+  toBeRun: boolean
+  eligibleToRun: boolean
+  inDevelopment: boolean
+  migsiVersion: number
+  hasBeenRun: boolean
+  hasActuallyBeenRun: boolean
   version: string | number
-  versionChanged: boolean,
-  friendlyName: string,
-  failedToRun: boolean,
+  versionChanged: boolean
+  friendlyName: string
+  failedToRun: boolean
   runDate: Date | null | string
   rolledBack: boolean
   archived?: boolean
@@ -50,5 +49,4 @@ export interface Migration {
 export interface RunnableMigration extends Migration {
   run: (...params: any[]) => Promise<void>
   rollback?: (...params: any[]) => Promise<void>
-
 }

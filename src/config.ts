@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import {Migration, RunnableMigration} from './migration'
-import {ActiveUsingDeclaration, SetuppableUsingDeclaration} from './support-manager'
+import { Migration, RunnableMigration } from './migration'
+import { ActiveUsingDeclaration, SetuppableUsingDeclaration } from './support-manager'
 
 export interface Storage {
   loadPastMigrations: () => Promise<Migration[]> | Migration[]
@@ -16,31 +16,29 @@ export interface LoggerInterface {
   error: LogFn
 }
 
-type ConfigDirectoryKey = "migrationDir" | "templateDir" | "migsiStatusFile"
+type ConfigDirectoryKey = 'migrationDir' | 'templateDir' | 'migsiStatusFile'
 
 export interface Config {
-  pathsRelativeTo?: string,
-  allowRerunningAllMigrations?: boolean,
-  storage?: Storage,
-  prefixAlgorithm?: () => string,
-  failOnDevelopmentScriptsInProductionMode?: boolean,
-  rollbackAll?: boolean,
+  pathsRelativeTo?: string
+  allowRerunningAllMigrations?: boolean
+  storage?: Storage
+  prefixAlgorithm?: () => string
+  failOnDevelopmentScriptsInProductionMode?: boolean
+  rollbackAll?: boolean
   confirmation?: (migrations: RunnableMigration[], extra: any) => Promise<boolean>
   using?: {
     [index: string]: SetuppableUsingDeclaration | ActiveUsingDeclaration
   }
   disableOutputTracking?: boolean
-  logger?: LoggerInterface,
+  logger?: LoggerInterface
   migsiStatusFile?: string
   hooks?: {
     migrationsLoaded?(sortedMigrations: Migration[]): Migration[] | Promise<Migration[]>
   }
 }
 
-
 export const config: Config = {}
-declare function require(name:string) : any
-
+declare function require(name: string): any
 
 export const setupConfig = (newConfig: Config) => {
   const existingConfigAny = <any>config

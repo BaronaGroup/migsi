@@ -1,7 +1,7 @@
-import {wipeWorkspace, configure, runMigrations, expectFailure} from './test-utils'
+import { wipeWorkspace, configure, runMigrations, expectFailure } from './test-utils'
 import * as core from '../src/core'
 import * as fs from 'fs'
-import {assert} from 'chai'
+import { assert } from 'chai'
 import * as path from 'path'
 
 describe('create-migration-test.js', function () {
@@ -24,27 +24,27 @@ describe('create-migration-test.js', function () {
     it('default templates', async function () {
       await core.createMigrationScript('drei', 'default')
 
-      await expectFailure(runMigrations(), err => assert.equal(err.message, 'Not implemented'))
+      await expectFailure(runMigrations(), (err) => assert.equal(err.message, 'Not implemented'))
     })
 
     it('custom templates', async function () {
       const templateDir = path.join(__dirname, '../test-workspace')
-      configure({templateDir})
+      configure({ templateDir })
       const templateData = `module.exports = { run() { throw new Error('custom')}}`
       fs.writeFileSync(templateDir + '/custom.js', templateData, 'UTF-8')
       await core.createMigrationScript('drei', 'custom')
 
-      await expectFailure(runMigrations(), err => assert.equal(err.message, 'custom'))
+      await expectFailure(runMigrations(), (err) => assert.equal(err.message, 'custom'))
     })
 
     it('custom templates with .template.js', async function () {
       const templateDir = path.join(__dirname, '../test-workspace')
-      configure({templateDir})
+      configure({ templateDir })
       const templateData = `module.exports = { run() { throw new Error('custom')}}`
       fs.writeFileSync(templateDir + '/custom.template.js', templateData, 'UTF-8')
       await core.createMigrationScript('drei', 'custom')
 
-      await expectFailure(runMigrations(), err => assert.equal(err.message, 'custom'))
+      await expectFailure(runMigrations(), (err) => assert.equal(err.message, 'custom'))
     })
   })
 

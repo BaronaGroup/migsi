@@ -6,14 +6,14 @@ import {
   assertMigrations,
   createMigration,
   replaceInFile,
-  wipeTestModuleCache
+  wipeTestModuleCache,
 } from './test-utils'
 
 import * as core from '../src/core'
 import * as fs from 'fs'
-import {assert} from 'chai'
+import { assert } from 'chai'
 import * as path from 'path'
-import {Migration} from '../src/migration'
+import { Migration } from '../src/migration'
 
 describe('config-options-test', function () {
   beforeEach(wipeWorkspace)
@@ -23,22 +23,22 @@ describe('config-options-test', function () {
     assert.ok(!fs.existsSync(migrationFilename))
     const migrationDir = __dirname + '/../test-workspace/alpha'
     fs.mkdirSync(migrationDir)
-    configure({migrationDir})
+    configure({ migrationDir })
     await core.createMigrationScript('beta')
     assert.ok(fs.existsSync(migrationFilename))
-    await expectFailure(runMigrations(), err => assert.equal(err.message, 'Not implemented'))
+    await expectFailure(runMigrations(), (err) => assert.equal(err.message, 'Not implemented'))
   })
 
   describe('templateDir', function () {
     const cases = [
-      {label: 'new templates', templateName: 'new-template'},
-      {label: 'overriding default templates', templateName: 'default'}
+      { label: 'new templates', templateName: 'new-template' },
+      { label: 'overriding default templates', templateName: 'default' },
     ]
 
-    for (let {label, templateName} of cases) {
+    for (let { label, templateName } of cases) {
       it(label, async function () {
         const templateDir = path.join(__dirname, '..', 'test-workspace') // we might as well use the workspace directly
-        configure({templateDir})
+        configure({ templateDir })
         const templateData = `
         module.exports = { run()  { require('../test/test-utils').runImpl('template-${templateName}')} } `
         fs.writeFileSync(path.join(templateDir, templateName + '.js'), templateData, 'UTF-8')
@@ -47,14 +47,12 @@ describe('config-options-test', function () {
         await assertMigrations([`template-${templateName}`])
       })
     }
-
   })
 
   describe('failOnDevelopmentScriptsInProductionMode ', function () {
-
     beforeEach(async function () {
-      createMigration('a', {inDevelopment: false})
-      createMigration('b', {inDevelopment: true, dependencies: ['a']})
+      createMigration('a', { inDevelopment: false })
+      createMigration('b', { inDevelopment: true, dependencies: ['a'] })
     })
 
     it('unset', async function () {
@@ -64,28 +62,28 @@ describe('config-options-test', function () {
     })
 
     it('set to true', async function () {
-      configure({failOnDevelopmentScriptsInProductionMode: true})
+      configure({ failOnDevelopmentScriptsInProductionMode: true })
       await expectFailure(runMigrations(true))
     })
   })
 
   describe('storage', function () {
     it('uses provided storage', async function () {
-      const stored : string[] = []
+      const stored: string[] = []
       configure({
         storage: {
           async loadPastMigrations() {
             return [
               {
                 migsiName: 'a',
-                hasBeenRun: true
-              }
+                hasBeenRun: true,
+              },
             ]
           },
-          async updateStatus(migration : Migration) {
+          async updateStatus(migration: Migration) {
             stored.push(migration.migsiName)
-          }
-        }
+          },
+        },
       })
       createMigration('a')
       createMigration('b')
@@ -97,7 +95,7 @@ describe('config-options-test', function () {
 
   describe('allowRerunningAllMigrations ', function () {
     async function body() {
-      const script = createMigration('a', {version: 'hash', 'token': 'TOKEN'})
+      const script = createMigration('a', { version: 'hash', token: 'TOKEN' })
       await runMigrations()
       replaceInFile(script, /TOKEN/, 'TOKEN2')
       wipeTestModuleCache()
@@ -105,13 +103,13 @@ describe('config-options-test', function () {
     }
 
     it('set to false', async function () {
-      configure({allowRerunningAllMigrations: false})
+      configure({ allowRerunningAllMigrations: false })
       await body()
       assertMigrations(['a'])
     })
 
     it('set to true', async function () {
-      configure({allowRerunningAllMigrations: true})
+      configure({ allowRerunningAllMigrations: true })
       await body()
       assertMigrations(['a', 'a'])
     })
@@ -119,13 +117,13 @@ describe('config-options-test', function () {
 
   describe('prefixAlgorithm ', function () {
     it('simple prefix', async function () {
-      configure({prefixAlgorithm: () => 'howdy'})
+      configure({ prefixAlgorithm: () => 'howdy' })
       await core.createMigrationScript('test')
       assert.ok(fs.existsSync(path.join(__dirname, '../test-workspace/howdytest.migsi.js')))
     })
 
     it('with a path', async function () {
-      configure({prefixAlgorithm: () => 'dir/name/'})
+      configure({ prefixAlgorithm: () => 'dir/name/' })
       await core.createMigrationScript('test')
       assert.ok(fs.existsSync(path.join(__dirname, '../test-workspace/dir/name/test.migsi.js')))
     })

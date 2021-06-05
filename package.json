@@ -26,6 +26,7 @@
     "mocha": "8.4.0",
     "npm-release": "1.0.0",
     "post-commit": "0.0.1",
+    "prettier": "^2.3.1",
     "source-map-support": "0.5.19",
     "typescript": "4.3.2"
   },
@@ -44,7 +45,8 @@
     "build-test": "gulp build-tests",
     "prepare": "npm run build-ts",
     "release": "npm test && npm-release",
-    "lint": "npm run eslint"
+    "lint": "npm run eslint",
+    "prettier": "find src test -name '*.ts' | xargs prettier --write"
   },
   "post-commit": [
     "background-eslint-hook"

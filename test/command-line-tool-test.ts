@@ -1,11 +1,11 @@
 /* eslint no-console: 0 */
 
-import {wipeWorkspace, runMigrations, expectFailure, assertMigrations, createMigration} from './test-utils'
+import { wipeWorkspace, runMigrations, expectFailure, assertMigrations, createMigration } from './test-utils'
 import * as path from 'path'
 import * as fs from 'fs'
-import {assert} from 'chai'
+import { assert } from 'chai'
 import * as cp from 'child_process'
-import {config, loadConfig} from '../src/config'
+import { config, loadConfig } from '../src/config'
 import * as moment from 'moment'
 import * as _ from 'lodash'
 
@@ -15,7 +15,7 @@ interface RunOutput {
 }
 
 import 'mocha'
-import {Migration} from '../src/migration'
+import { Migration } from '../src/migration'
 
 describe('command-line-tool-test', function () {
   const workspace = path.join(__dirname, '..', 'test-workspace'),
@@ -24,14 +24,18 @@ describe('command-line-tool-test', function () {
 
   beforeEach(function () {
     wipeWorkspace()
-    fs.writeFileSync(configFile, `
+    fs.writeFileSync(
+      configFile,
+      `
       module.exports = {
         migrationDir: '${workspace}',
         templateDir: '${workspace}',
         storage: require('${path.join(__dirname, '..', 'src', 'storage', 'json-file')}').default('${storageFile}'),
         prefixAlgorithm: () => ''
       }
-   `, 'UTF-8')
+   `,
+      'UTF-8'
+    )
     loadConfig(configFile)
   })
 
@@ -46,9 +50,13 @@ describe('command-line-tool-test', function () {
     })
 
     it('with another template', async function () {
-      fs.writeFileSync(path.join(workspace, 'custom.js'), `
+      fs.writeFileSync(
+        path.join(workspace, 'custom.js'),
+        `
       module.exports = { run() { throw new Error('Is custom') }}
-      `, 'UTF-8')
+      `,
+        'UTF-8'
+      )
 
       await run(`node build/test/src/command-line-tool create --config=${configFile} --name=third --template=custom`)
       const script = path.join(workspace, 'third.migsi.js')
@@ -63,8 +71,8 @@ describe('command-line-tool-test', function () {
     })
 
     beforeEach(function () {
-      createMigration('a', {inDevelopment: false})
-      createMigration('b', {inDevelopment: true, dependencies: ['a']})
+      createMigration('a', { inDevelopment: false })
+      createMigration('b', { inDevelopment: true, dependencies: ['a'] })
     })
 
     it('is able to run all scripts', async function () {
@@ -81,16 +89,15 @@ describe('command-line-tool-test', function () {
       await run(`node build/test/src/command-line-tool run --config=${configFile} --production --yes --dry-run`)
       assertMigrations([])
     })
-
   })
 
   describe('list', function () {
     it('lists migrations in order along with their run dates, when relevant', async function () {
       createMigration('script1')
-      createMigration('script2', {dependencies: ['script1']})
+      createMigration('script2', { dependencies: ['script1'] })
       await runMigrations()
       createMigration('newscript')
-      const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool list --config=${configFile}`)
+      const { stdout } = await run(`MIGSI_QUIET= node build/test/src/command-line-tool list --config=${configFile}`)
       const lines = stdout.split('\n')
       const hasDate = /20\d\d/
       assert.ok(lines[0].includes('script1'))
@@ -104,13 +111,15 @@ describe('command-line-tool-test', function () {
 
   describe('ensure-no-development-scripts', function () {
     it('passes if there are no development scripts', async function () {
-      createMigration('a', {inDevelopment: false})
+      createMigration('a', { inDevelopment: false })
       await run(`node build/test/src/command-line-tool ensure-no-development-scripts --config=${configFile}`)
     })
 
     it('fails if there are development scripts', async function () {
-      createMigration('a', {inDevelopment: true})
-      await expectFailure(run(`node build/test/src/command-line-tool ensure-no-development-scripts --config=${configFile}`))
+      createMigration('a', { inDevelopment: true })
+      await expectFailure(
+        run(`node build/test/src/command-line-tool ensure-no-development-scripts --config=${configFile}`)
+      )
     })
   })
 
@@ -119,61 +128,68 @@ describe('command-line-tool-test', function () {
 
     describe('data', function () {
       it('is able to display stdout', async function () {
-        createMigration('s1', {run: () => console.log('hello from within')})
+        createMigration('s1', { run: () => console.log('hello from within') })
         await runMigrations()
-        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
-        assert.ok(stdout.split('\n').some(line => line.includes('stdout') && line.includes('hello from within')))
+        const { stdout } = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
+        assert.ok(stdout.split('\n').some((line) => line.includes('stdout') && line.includes('hello from within')))
       })
 
       it('is able to display stderr', async function () {
-        createMigration('s1', {run: () => console.error('error from within')})
+        createMigration('s1', { run: () => console.error('error from within') })
         await runMigrations()
-        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
-        assert.ok(stdout.split('\n').some(line => line.includes('stderr') && line.includes('error from within')))
+        const { stdout } = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
+        assert.ok(stdout.split('\n').some((line) => line.includes('stderr') && line.includes('error from within')))
       })
 
       it('is able to display exceptions', async function () {
         createMigration('s1', {
           run: () => {
             throw new Error('This migration failed')
-          }
+          },
         })
         await expectFailure(runMigrations())
-        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
-        assert.ok(stdout.split('\n').some(line => line.includes('This migration failed')))
+        const { stdout } = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile}`)
+        assert.ok(stdout.split('\n').some((line) => line.includes('This migration failed')))
       })
 
       it('raw', async function () {
-        createMigration('s1', {run: () => console.log('hello from within')})
+        createMigration('s1', { run: () => console.log('hello from within') })
         await runMigrations()
-        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --raw`)
+        const { stdout } = await run(
+          `MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --raw`
+        )
         assert.ok(stdout.split('\n').includes('hello from within'))
       })
     })
 
     describe('filtering', function () {
       it('by name', async function () {
-        createMigration('s1', {run: () => console.log('s1 says hi')})
-        createMigration('s2', {run: () => console.log('s2 says hi')})
+        createMigration('s1', { run: () => console.log('s1 says hi') })
+        createMigration('s2', { run: () => console.log('s2 says hi') })
         await runMigrations()
-        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --name=s1`)
+        const { stdout } = await run(
+          `MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --name=s1`
+        )
         const lines = stdout.split('\n')
-        assert.ok(lines.some(line => line.includes('stdout') && line.includes('s1 says hi')))
-        assert.ok(!lines.some(line => line.includes('stdout') && line.includes('s2 says hi')))
+        assert.ok(lines.some((line) => line.includes('stdout') && line.includes('s1 says hi')))
+        assert.ok(!lines.some((line) => line.includes('stdout') && line.includes('s2 says hi')))
       })
 
       it('failed', async function () {
-        createMigration('s1', {run: () => console.log('s1 says hi')})
+        createMigration('s1', { run: () => console.log('s1 says hi') })
         createMigration('s2', {
           run: () => {
             throw new Error('s2 says fail')
-          }, dependencies: ['s1']
+          },
+          dependencies: ['s1'],
         })
         await expectFailure(runMigrations())
-        const {stdout} = await run(`MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --failed`)
+        const { stdout } = await run(
+          `MIGSI_QUIET= node build/test/src/command-line-tool output --config=${configFile} --failed`
+        )
         const lines = stdout.split('\n')
-        assert.ok(!lines.some(line => line.includes('s1 says hi')))
-        assert.ok(lines.some(line => line.includes('s2 says fail')))
+        assert.ok(!lines.some((line) => line.includes('s1 says hi')))
+        assert.ok(lines.some((line) => line.includes('s2 says fail')))
       })
 
       describe('durations', function () {
@@ -185,15 +201,17 @@ describe('command-line-tool-test', function () {
           for (let i = 1; i < 16; i += 2) {
             const desiredRunDate = moment().subtract(Math.pow(2, i), 'hours').toDate()
             createMigration('m' + i, {
-              desiredRunDate, i, run: function () {
+              desiredRunDate,
+              i,
+              run: function () {
                 console.log('I am ' + this.i)
-              }
+              },
             })
           }
           createMigration('mnow', {
             run: function () {
               console.log('I am now')
-            }
+            },
           })
           await runMigrations()
           if (!config.storage) throw new Error('Missing storage')
@@ -211,19 +229,21 @@ describe('command-line-tool-test', function () {
         describe('since', function () {
           it('specific date', async function () {
             const oneWeekAgo = moment().subtract(1, 'week').toDate().toISOString()
-            const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile} --since=${oneWeekAgo}`)
+            const { stdout } = await run(
+              `node build/test/src/command-line-tool output --config=${configFile} --since=${oneWeekAgo}`
+            )
             assertRan(stdout, 'now', 1, 3, 5, 7)
           })
 
           it('date with a local timestamp is accepted', async function () {
             const now = new Date()
-            const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())).toISOString().split('T')[0]
-            const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile} --since=${today}`)
-            const expected = _.compact([
-              'now',
-              new Date().getHours() >= 2 && 1,
-              new Date().getHours() >= 8 && 3
-            ])
+            const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+              .toISOString()
+              .split('T')[0]
+            const { stdout } = await run(
+              `node build/test/src/command-line-tool output --config=${configFile} --since=${today}`
+            )
+            const expected = _.compact(['now', new Date().getHours() >= 2 && 1, new Date().getHours() >= 8 && 3])
             assertRan(stdout, ...expected)
           })
         })
@@ -231,14 +251,20 @@ describe('command-line-tool-test', function () {
         describe('until', function () {
           it('specific date', async function () {
             const oneWeekAgo = moment().subtract(1, 'week').toDate().toISOString()
-            const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile} --until=${oneWeekAgo}`)
+            const { stdout } = await run(
+              `node build/test/src/command-line-tool output --config=${configFile} --until=${oneWeekAgo}`
+            )
             assertRan(stdout, 9, 11, 13, 15)
           })
 
           it('date with a local timestamp is accepted', async function () {
             const now = new Date()
-            const yesterday = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() - 1)).toISOString().split('T')[0]
-            const {stdout} = await run(`node build/test/src/command-line-tool output --config=${configFile} --until=${yesterday}`)
+            const yesterday = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() - 1))
+              .toISOString()
+              .split('T')[0]
+            const { stdout } = await run(
+              `node build/test/src/command-line-tool output --config=${configFile} --until=${yesterday}`
+            )
             const expected = _.compact([
               new Date().getHours() < 2 && 1,
               new Date().getHours() < 8 && 3,
@@ -247,19 +273,18 @@ describe('command-line-tool-test', function () {
               9,
               11,
               13,
-              15
-
+              15,
             ])
             assertRan(stdout, ...expected)
           })
         })
       })
 
-      function assertRan(output: string, ...expected: ("now" | number)[]) {
+      function assertRan(output: string, ...expected: ('now' | number)[]) {
         const lines = output.split('\n')
         for (let i = -1; i < 16; i += 2) {
           const j = i === -1 ? 'now' : i
-          const included = lines.some(line => !!line.match(new RegExp(`I am ${j}$`)))
+          const included = lines.some((line) => !!line.match(new RegExp(`I am ${j}$`)))
           if (expected.includes(j)) {
             assert.ok(included, j + ' was supposed to be included in output')
           } else {
@@ -274,7 +299,7 @@ describe('command-line-tool-test', function () {
     return new Promise((resolve, reject) => {
       cp.exec(commandLine, function (err, stdout, stderr) {
         if (err) return reject(err)
-        resolve({stdout, stderr})
+        resolve({ stdout, stderr })
       })
     })
   }

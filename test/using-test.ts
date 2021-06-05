@@ -1,14 +1,13 @@
-import {wipeWorkspace, configure, runMigrations, replaceInFile, createMigration} from './test-utils'
-  import {assert} from 'chai'
+import { wipeWorkspace, configure, runMigrations, replaceInFile, createMigration } from './test-utils'
+import { assert } from 'chai'
 
-let sequence : string[] = []
+let sequence: string[] = []
 
-export const addToSequence = (...args : string[]) => {
+export const addToSequence = (...args: string[]) => {
   sequence.push(args.join(' '))
 }
 
-
-export const using = (id : string) => {
+export const using = (id: string) => {
   return {
     async open() {
       sequence.push('+' + id)
@@ -16,168 +15,138 @@ export const using = (id : string) => {
     },
     async close() {
       sequence.push('-' + id)
-    }
+    },
   }
 }
 
 describe('using-test', function () {
-
   beforeEach(function () {
     wipeWorkspace()
     sequence = []
   })
 
   describe('various forms of declaring using modules', function () {
-    it('in configuration', async function() {
-      configure({using: {'1': using('1')}})
+    it('in configuration', async function () {
+      configure({ using: { '1': using('1') } })
       createUsingMigration('m1', {
-        using: ['1']
+        using: ['1'],
       })
       await runMigrations()
-      assert.deepEqual(sequence, [
-        '+1',
-        'm1 1',
-        '-1'
-      ])
+      assert.deepEqual(sequence, ['+1', 'm1 1', '-1'])
     })
 
-    it('inline', async function() {
+    it('inline', async function () {
       configure()
       const filename = createUsingMigration('m1', {
-        using: ['TOKEN']
+        using: ['TOKEN'],
       })
       await replaceInFile(filename, '"TOKEN"', `require('../test/using-test').using('99')`)
       await runMigrations()
-      assert.deepEqual(sequence, [
-        '+99',
-        'm1 99',
-        '-99'
-      ])
+      assert.deepEqual(sequence, ['+99', 'm1 99', '-99'])
     })
 
-    it('with setup', async function() {
-      configure({using: {'x': {
-        setup() {
-          return {
-            open() {
-              addToSequence('+x')
-              return 'x'
+    it('with setup', async function () {
+      configure({
+        using: {
+          x: {
+            setup() {
+              return {
+                open() {
+                  addToSequence('+x')
+                  return 'x'
+                },
+                close() {
+                  addToSequence('-x')
+                },
+              }
             },
-            close() {
-              addToSequence('-x')
-            }
-          }
-        }
-      }}})
+          },
+        },
+      })
       createUsingMigration('m1', {
-        using: ['x']
+        using: ['x'],
       })
       await runMigrations()
-      assert.deepEqual(sequence, [
-        '+x',
-        'm1 x',
-        '-x'
-      ])
+      assert.deepEqual(sequence, ['+x', 'm1 x', '-x'])
     })
 
-    it('simple', async function() {
-      configure({using: {'q': () => 'q'}})
+    it('simple', async function () {
+      configure({ using: { q: () => 'q' } })
       createUsingMigration('m1', {
-        using: ['q']
+        using: ['q'],
       })
       await runMigrations()
-      assert.deepEqual(sequence, [
-        'm1 q'
-      ])
+      assert.deepEqual(sequence, ['m1 q'])
     })
-
   })
 
   describe('utilizing using', function () {
-    before(function() {
+    before(function () {
       configure({
         using: {
-          'a': using('a'),
-          'b': using('b'),
-          'c': using('c')
-        }
+          a: using('a'),
+          b: using('b'),
+          c: using('c'),
+        },
       })
     })
 
-    it('initializes the using for the migration and closes after', async function() {
+    it('initializes the using for the migration and closes after', async function () {
       createUsingMigration('m1', {
-        using: ['a']
+        using: ['a'],
       })
       await runMigrations()
-      assert.deepEqual(sequence, [
-        '+a',
-        'm1 a',
-        '-a'
-      ])
+      assert.deepEqual(sequence, ['+a', 'm1 a', '-a'])
     })
 
-    it('shares the object between multiple migrations that need it', async function() {
+    it('shares the object between multiple migrations that need it', async function () {
       createUsingMigration('m1', {
-        using: ['a']
+        using: ['a'],
       })
       createUsingMigration('m2', {
         using: ['a'],
-        dependencies: ['m1']
+        dependencies: ['m1'],
       })
       await runMigrations()
-      assert.deepEqual(sequence, [
-        '+a',
-        'm1 a',
-        'm2 a',
-        '-a'
-      ])
+      assert.deepEqual(sequence, ['+a', 'm1 a', 'm2 a', '-a'])
     })
 
-    it('unloads the object once no migration needs it', async function() {
+    it('unloads the object once no migration needs it', async function () {
       createUsingMigration('m1', {
-        using: ['a']
+        using: ['a'],
       })
       createUsingMigration('m2', {
         using: ['a'],
-        dependencies: ['m1']
+        dependencies: ['m1'],
       })
       createUsingMigration('m3', {
-        dependencies: ['m2']
+        dependencies: ['m2'],
       })
       await runMigrations()
-      assert.deepEqual(sequence, [
-        '+a',
-        'm1 a',
-        'm2 a',
-        '-a',
-        'm3'
-      ])
+      assert.deepEqual(sequence, ['+a', 'm1 a', 'm2 a', '-a', 'm3'])
     })
 
-    it('multiple usings are supported', async function() {
+    it('multiple usings are supported', async function () {
       createUsingMigration('m1', {
-        using: ['a', 'b']
+        using: ['a', 'b'],
       })
       await runMigrations()
-      assert.deepEqual(sequence, [
-        '+a',
-        '+b',
-        'm1 a b',
-        '-a',
-        '-b'
-      ])
+      assert.deepEqual(sequence, ['+a', '+b', 'm1 a b', '-a', '-b'])
     })
   })
 })
 
-
-function createUsingMigration(name : string, args : object) {
-  const withWrapper = Object.assign({},
+function createUsingMigration(name: string, args: object) {
+  const withWrapper = Object.assign(
+    {},
     args,
 
-    { run: `async function(...args) {
+    {
+      run: `async function(...args) {
       const { addToSequence } = require('../test/using-test')
       addToSequence(this.friendlyName, ...args)
-    }`})
+    }`,
+    }
+  )
   return createMigration(name, withWrapper)
 }

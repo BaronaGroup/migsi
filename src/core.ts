@@ -1,26 +1,26 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import {xtermColor} from './xterm-color-tty-only'
+import { xtermColor } from './xterm-color-tty-only'
 import * as _ from 'lodash'
-import {config, getDir, setupConfig, findAndLoadConfig, Config} from './config'
-import {findMigrations} from './migration-loader'
+import { config, getDir, setupConfig, findAndLoadConfig, Config } from './config'
+import { findMigrations } from './migration-loader'
 import SupportManager from './support-manager'
-import {trackOutput} from './output-tracker'
-import {getLogger} from './utils'
-import {archive as archiveImpl} from './migsi-status'
-import {Migration, RunnableMigration, TemplateVariables} from './migration'
+import { trackOutput } from './output-tracker'
+import { getLogger } from './utils'
+import { archive as archiveImpl } from './migsi-status'
+import { Migration, RunnableMigration, TemplateVariables } from './migration'
 
 interface MigrationFilters {
-  name?: string,
-  since?: Date,
-  until?: Date,
+  name?: string
+  since?: Date
+  until?: Date
   failed?: boolean
 }
 
 interface RunOptions {
-  production?: boolean,
-  dryRun?: boolean,
-  skipProgressFlag?: boolean,
+  production?: boolean
+  dryRun?: boolean
+  skipProgressFlag?: boolean
   confirmation?: (migrations: RunnableMigration[]) => Promise<any> | any
 }
 
@@ -28,9 +28,9 @@ export const loadAllMigrations = async function () {
   return await findMigrations()
 }
 
-export const filterMigrations = async function ({name, since, until, failed}: MigrationFilters) {
+export const filterMigrations = async function ({ name, since, until, failed }: MigrationFilters) {
   const migrations = await findMigrations()
-  return migrations.filter(migration => {
+  return migrations.filter((migration) => {
     if (name && migration.friendlyName !== name && migration.migsiName !== name) return false
     if (since && (!migration.hasBeenRun || asDate(migration.runDate) < since)) return false
     if (until && (!migration.hasBeenRun || asDate(migration.runDate) >= until)) return false
@@ -45,8 +45,8 @@ export const createMigrationScript = async function (friendlyName: string, templ
   const relativePath = migPath.slice(0, -1)
   const filename = (await getFilenamePrefix()) + toFilename(<string>plainName) + '.migsi.js'
   const templateImpl = loadTemplate(templateName)
-  const updatedTemplate = await updateTemplate(templateImpl, {friendlyName})
-  const ffn = path.join(getDir("migrationDir"), ...relativePath, filename)
+  const updatedTemplate = await updateTemplate(templateImpl, { friendlyName })
+  const ffn = path.join(getDir('migrationDir'), ...relativePath, filename)
 
   if (fs.existsSync(ffn)) {
     throw new Error(ffn + ' already exists')
@@ -74,7 +74,14 @@ async function getFilenamePrefix() {
 
 function getFilenameTimestamp() {
   const now = new Date()
-  return pad(now.getFullYear(), 4) + pad(now.getMonth() + 1) + pad(now.getDate()) + 'T' + pad(now.getHours()) + pad(now.getMinutes())
+  return (
+    pad(now.getFullYear(), 4) +
+    pad(now.getMonth() + 1) +
+    pad(now.getDate()) +
+    'T' +
+    pad(now.getHours()) +
+    pad(now.getMinutes())
+  )
 
   function pad(input: number, to = 2) {
     const str = input.toString()
@@ -94,14 +101,14 @@ function loadTemplate(template: string) {
 }
 
 function findTemplate(templateName: string) {
-  const templateDir = getDir("templateDir")
+  const templateDir = getDir('templateDir')
   const candidates = _.compact([
     templateDir && path.join(templateDir, templateName + '.template.js'),
     templateDir && path.join(templateDir, templateName + '.template.ts'),
     templateDir && path.join(templateDir, templateName + '.js'),
     templateDir && path.join(templateDir, templateName + '.ts'),
     path.join(__dirname, '..', 'templates', templateName + '.js'),
-    path.join(__dirname, '..', 'templates', templateName + '.ts')
+    path.join(__dirname, '..', 'templates', templateName + '.ts'),
   ])
   for (let candidate of candidates) {
     if (fs.existsSync(candidate)) {
@@ -113,42 +120,61 @@ function findTemplate(templateName: string) {
 }
 
 async function updateTemplate(rawTemplate: string, variables: TemplateVariables) {
-  const implicitDependencies = '[' + (await getImplicitDependencyNames()).map(dependency => "'" + dependency.replace(/'/g, '\\') + "'").join(', ') + ']'
-  return rawTemplate.replace(/\[\[FRIENDLY_NAME\]\]/g, variables.friendlyName)
+  const implicitDependencies =
+    '[' +
+    (await getImplicitDependencyNames()).map((dependency) => "'" + dependency.replace(/'/g, '\\') + "'").join(', ') +
+    ']'
+  return rawTemplate
+    .replace(/\[\[FRIENDLY_NAME\]\]/g, variables.friendlyName)
     .replace(/\[\[IMPLICIT_DEPENDENCY\]\]/g, await getImplicitDependencyName())
     .replace(/'\[\[IMPLICIT_DEPENDENCIES\]\]'/g, implicitDependencies)
     .replace(/\n?.+\/\/.+migsi-template-exclude-line/g, '')
 }
 
-export const runMigrations = async function ({production, confirmation, dryRun = false, skipProgressFlag}: RunOptions = {}) {
+export const runMigrations = async function ({
+  production,
+  confirmation,
+  dryRun = false,
+  skipProgressFlag,
+}: RunOptions = {}) {
   const logger = getLogger()
   if (!config.storage) throw new Error('No storage set up')
   let migrations = await loadAllMigrations()
   if (production) {
-    const firstNonProduction = migrations.find(migr => migr.inDevelopment)
+    const firstNonProduction = migrations.find((migr) => migr.inDevelopment)
     if (firstNonProduction) {
       const index = migrations.indexOf(firstNonProduction)
       const excluded = migrations.slice(index)
-      const excludedDev = excluded.filter(mig => mig.inDevelopment)
+      const excludedDev = excluded.filter((mig) => mig.inDevelopment)
       if (config.failOnDevelopmentScriptsInProductionMode) {
-        throw new Error(`There are development scripts present for production usage; will not run any migrations.\n\nThe scrips marked for development are ${excludedDev.map(mig => mig.migsiName)}`)
+        throw new Error(
+          `There are development scripts present for production usage; will not run any migrations.\n\nThe scrips marked for development are ${excludedDev.map(
+            (mig) => mig.migsiName
+          )}`
+        )
       }
       migrations = migrations.slice(0, index)
-      logger.info(`Excluding development mode migration scripts:\n${excludedDev.map(mig => mig.migsiName).join('\n')}`)
-      const excludedProd = excluded.filter(mig => !mig.inDevelopment)
-      logger.info(`Excluding production mode migration scripts dependant on development scripts:\n${excludedProd.map(mig => mig.migsiName).join('\n')}`)
+      logger.info(
+        `Excluding development mode migration scripts:\n${excludedDev.map((mig) => mig.migsiName).join('\n')}`
+      )
+      const excludedProd = excluded.filter((mig) => !mig.inDevelopment)
+      logger.info(
+        `Excluding production mode migration scripts dependant on development scripts:\n${excludedProd
+          .map((mig) => mig.migsiName)
+          .join('\n')}`
+      )
     }
   }
 
-  const toBeRun: RunnableMigration[] = <RunnableMigration[]>migrations.filter(m => m.toBeRun)
+  const toBeRun: RunnableMigration[] = <RunnableMigration[]>migrations.filter((m) => m.toBeRun)
 
   if (!toBeRun.length) {
     logger.info('No migrations to be run.')
     return toBeRun
   }
 
-  logger.info(`Migrations to be run:\n${toBeRun.map(mig => mig.migsiName).join('\n')}`)
-  if (!await confirmMigrations(toBeRun)) return toBeRun
+  logger.info(`Migrations to be run:\n${toBeRun.map((mig) => mig.migsiName).join('\n')}`)
+  if (!(await confirmMigrations(toBeRun))) return toBeRun
 
   const supportManager = new SupportManager(toBeRun)
 
@@ -186,7 +212,6 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       if (!dryRun) {
         if (skipProgressFlag) {
           migration.hasBeenRun = false
-
         }
         await config.storage.updateStatus(migration)
       }
@@ -204,7 +229,8 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       await supportManager.destroy()
       logger.info(xtermColor(9)('Failure: ' + migration.migsiName, err.stack || err))
       err.printed = true
-      if (!dryRun) { // support functionality failed, we do not want to be rolling back anything because of it
+      if (!dryRun) {
+        // support functionality failed, we do not want to be rolling back anything because of it
         await rollback(rollbackable, toBeRun)
       }
       throw err
@@ -220,7 +246,11 @@ export const runMigrations = async function ({production, confirmation, dryRun =
     }
     const rollbackAll = config.rollbackAll
     if (rollbackAll && toBeRun[rollbackable.length - 1] !== rollbackable[rollbackable.length - 1]) {
-      logger.warn('Not all run migration scripts support rollback; only rolling back the last ' + rollbackable.length + ' migration scripts')
+      logger.warn(
+        'Not all run migration scripts support rollback; only rolling back the last ' +
+          rollbackable.length +
+          ' migration scripts'
+      )
     }
     const toRollback = rollbackAll ? _.reverse(rollbackable) : [<RunnableMigration>_.last(rollbackable)]
 
@@ -246,7 +276,6 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         logger.info(xtermColor(40)('Rollback success:'), migration.migsiName + ', duration ' + duration)
 
         await supportManager.finish()
-
       } catch (err) {
         if (!migration.output) migration.output = {}
         migration.output.rollbackException = exceptionToOutput(err)
@@ -257,7 +286,6 @@ export const runMigrations = async function ({production, confirmation, dryRun =
         throw err
       }
     }
-
   }
 
   async function confirmMigrations(toBeRun: RunnableMigration[]) {
@@ -268,7 +296,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
       }
     }
     if (config.confirmation) {
-      if (!await config.confirmation(toBeRun, confirmResponse)) {
+      if (!(await config.confirmation(toBeRun, confirmResponse))) {
         return false
       }
     }
@@ -280,7 +308,7 @@ export const runMigrations = async function ({production, confirmation, dryRun =
 function exceptionToOutput(err: Error) {
   return {
     message: err.message,
-    stack: (err.stack || '').toString()
+    stack: (err.stack || '').toString(),
   }
 }
 
@@ -303,9 +331,10 @@ async function getImplicitDependencyName() {
 
 async function getImplicitDependencyNames() {
   const migrations = await findMigrations()
-  const dependencies = ([] as string[]).concat(...migrations.map(m => m.dependencies))
-  return migrations.filter(migration => !dependencies.includes(migration.migsiName))
-    .map(migration => migration.migsiName)
+  const dependencies = ([] as string[]).concat(...migrations.map((m) => m.dependencies))
+  return migrations
+    .filter((migration) => !dependencies.includes(migration.migsiName))
+    .map((migration) => migration.migsiName)
 }
 
 export async function archive(migration: Migration) {
@@ -315,7 +344,7 @@ export async function archive(migration: Migration) {
 export const configure = function (configData: Config | string | undefined, modifications?: Partial<Config>) {
   if (typeof configData === 'string') {
     const configuration = require(configData)
-    const actualConfig = {...(configuration.default || configuration), ...(modifications || {})}
+    const actualConfig = { ...(configuration.default || configuration), ...(modifications || {}) }
     setupConfig(actualConfig)
   } else if (_.isObject(configData)) {
     setupConfig(<Config>configData)
