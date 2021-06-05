@@ -54,7 +54,7 @@ export const createMigrationScript = async function (friendlyName: string, templ
     throw new Error(ffn + ' already exists')
   }
   ensureDirExists(path.dirname(ffn))
-  fs.writeFileSync(ffn, updatedTemplate, 'UTF-8')
+  fs.writeFileSync(ffn, updatedTemplate, 'utf-8')
   return ffn
 }
 
@@ -99,7 +99,7 @@ function toFilename(raw: string) {
 
 function loadTemplate(template: string) {
   const templateFn = findTemplate(template)
-  return fs.readFileSync(templateFn, 'UTF-8')
+  return fs.readFileSync(templateFn, 'utf-8')
 }
 
 function findTemplate(templateName: string) {
@@ -319,9 +319,9 @@ export const createTemplate = async function (name: string) {
   if (!dir) throw new Error('You do not have a templateDir in your config')
   const filename = path.join(dir, `${toFilename(name)}.template.js`)
   if (fs.existsSync(filename)) throw new Error(filename + ' already exists')
-  const defaultTemplateContents = fs.readFileSync(path.join(__dirname, '..', 'templates', 'default.js'), 'UTF-8')
+  const defaultTemplateContents = fs.readFileSync(path.join(__dirname, '..', 'templates', 'default.js'), 'utf-8')
   const newTemplateContents = defaultTemplateContents.replace(/\[\[TEMPLATE_NAME]]/g, name.replace(/'/g, "\\'"))
-  fs.writeFileSync(filename, newTemplateContents, 'UTF-8')
+  fs.writeFileSync(filename, newTemplateContents, 'utf-8')
   return filename
 }
 

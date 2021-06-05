@@ -45,7 +45,7 @@ function enableOutputTracking() {
 
   function customWrite(context: StreamName, stream: Writable, defaultImpl: any) {
     return function (chunk: any, encoding: any, callback: any) {
-      output[context].push({ timestamp: new Date().valueOf(), data: chunk.toString('UTF-8') })
+      output[context].push({ timestamp: new Date().valueOf(), data: chunk.toString('utf-8') })
       return defaultImpl.call(stream, chunk, encoding, callback)
     }
   }

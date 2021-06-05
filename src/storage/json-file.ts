@@ -21,7 +21,7 @@ function loadPastMigrations(): Migration[] {
   if (!fs.existsSync(this.filename)) {
     return []
   }
-  return JSON.parse(fs.readFileSync(this.filename, 'UTF-8'))
+  return JSON.parse(fs.readFileSync(this.filename, 'utf-8'))
 }
 
 async function updateStatus(migration: Migration) {
@@ -37,5 +37,5 @@ async function updateStatus(migration: Migration) {
   } else {
     Object.assign(entry, newEntry)
   }
-  fs.writeFileSync(this.filename, JSON.stringify(data, null, 2), 'UTF-8')
+  fs.writeFileSync(this.filename, JSON.stringify(data, null, 2), 'utf-8')
 }

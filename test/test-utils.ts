@@ -93,7 +93,7 @@ module.exports = Object.assign({
   rollback: ${rollback}
 }, opts)
   `,
-    'UTF-8'
+    'utf-8'
   )
   return fullFilename
 }
@@ -105,18 +105,18 @@ export const runMigrations = async function (production: boolean = false, extraO
 export const runImpl = (testName: string) => {
   const results = loadTestResults()
   results.push(testName)
-  fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'UTF-8')
+  fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'utf-8')
 }
 
 export const rollbackImpl = (testName: string) => {
   const results = loadTestResults()
   results.push('rollback:' + testName)
-  fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'UTF-8')
+  fs.writeFileSync(testResultFile, JSON.stringify(results, null, 2), 'utf-8')
 }
 
 function loadTestResults() {
   if (!fs.existsSync(testResultFile)) return []
-  return JSON.parse(fs.readFileSync(testResultFile, 'UTF-8'))
+  return JSON.parse(fs.readFileSync(testResultFile, 'utf-8'))
 }
 
 export const assertMigrations = function (expected: string[]) {
@@ -125,8 +125,8 @@ export const assertMigrations = function (expected: string[]) {
 }
 
 export const replaceInFile = function (filename: string, regexp: RegExp | string, replacement: string) {
-  const data = fs.readFileSync(filename, 'UTF-8')
-  fs.writeFileSync(filename, data.replace(regexp, replacement), 'UTF-8')
+  const data = fs.readFileSync(filename, 'utf-8')
+  fs.writeFileSync(filename, data.replace(regexp, replacement), 'utf-8')
 }
 
 export const expectFailure = function (promise: Promise<any>, failureAssert?: (error: Error) => void) {

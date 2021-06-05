@@ -42,7 +42,7 @@ describe('config-options-test', function () {
         configure({ templateDir })
         const templateData = `
         module.exports = { run()  { require('../test/test-utils').runImpl('template-${templateName}')} } `
-        fs.writeFileSync(path.join(templateDir, templateName + '.js'), templateData, 'UTF-8')
+        fs.writeFileSync(path.join(templateDir, templateName + '.js'), templateData, 'utf-8')
         await core.createMigrationScript('migration', templateName)
         await runMigrations()
         await assertMigrations([`template-${templateName}`])
