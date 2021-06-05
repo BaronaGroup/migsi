@@ -1,5 +1,6 @@
-import { wipeWorkspace, configure, runMigrations, replaceInFile, createMigration } from './test-utils'
 import { assert } from 'chai'
+
+import { configure, createMigration, replaceInFile, runMigrations, wipeWorkspace } from './test-utils'
 
 let sequence: string[] = []
 

@@ -1,6 +1,8 @@
-import * as _ from 'lodash'
-import { config } from './config'
 import { Writable } from 'stream'
+
+import * as _ from 'lodash'
+
+import { config } from './config'
 import { Migration, OutputLine } from './migration'
 
 type Context = 'run' | 'rollback'

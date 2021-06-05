@@ -1,16 +1,18 @@
-import * as core from './core'
-import * as nodeGetoptLong from 'node-getopt-long'
-import { config, getDir, setupConfig, findAndLoadConfig } from './config'
+import * as fs from 'fs'
 import * as path from 'path'
+
+import * as cliColor from 'cli-color'
 import * as inquirer from 'inquirer'
 import * as _ from 'lodash'
-import * as fs from 'fs'
-import { outputProcessor } from './output-tracker'
-import * as cliColor from 'cli-color'
 import * as moment from 'moment'
+import * as nodeGetoptLong from 'node-getopt-long'
+
+import { config, findAndLoadConfig, getDir, setupConfig } from './config'
+import * as core from './core'
 import defaultLogger from './default-logger'
-import { getLogger } from './utils'
 import { OutputLine } from './migration'
+import { outputProcessor } from './output-tracker'
+import { getLogger } from './utils'
 
 export interface OutputLineWithStream extends OutputLine {
   stream: string

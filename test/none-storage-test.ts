@@ -1,7 +1,8 @@
-import { wipeWorkspace, createMigration, runMigrations, configure, expectFailure } from './test-utils'
-import noneStorage from '../src/storage/none'
 import { assert } from 'chai'
 import * as _ from 'lodash'
+
+import noneStorage from '../src/storage/none'
+import { configure, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('none-storage-test', function () {
   beforeEach(wipeWorkspace)

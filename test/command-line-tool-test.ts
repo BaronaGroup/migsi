@@ -1,21 +1,23 @@
 /* eslint no-console: 0 */
 
-import { wipeWorkspace, runMigrations, expectFailure, assertMigrations, createMigration } from './test-utils'
-import * as path from 'path'
-import * as fs from 'fs'
-import { assert } from 'chai'
+import 'mocha'
+
 import * as cp from 'child_process'
-import { config, loadConfig } from '../src/config'
-import * as moment from 'moment'
+import * as fs from 'fs'
+import * as path from 'path'
+
+import { assert } from 'chai'
 import * as _ from 'lodash'
+import * as moment from 'moment'
+
+import { config, loadConfig } from '../src/config'
+import { Migration } from '../src/migration'
+import { assertMigrations, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 interface RunOutput {
   stdout: string
   stderr: string
 }
-
-import 'mocha'
-import { Migration } from '../src/migration'
 
 describe('command-line-tool-test', function () {
   const workspace = path.join(__dirname, '..', 'test-workspace'),

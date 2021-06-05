@@ -1,12 +1,14 @@
-import * as path from 'path'
+import * as crypto from 'crypto'
 import * as fs from 'fs'
+import * as path from 'path'
+
 import * as dependencySolver from 'dependency-solver'
 import * as _ from 'lodash'
-import * as crypto from 'crypto'
+
 import { config, getDir } from './config'
-import { getLogger } from './utils'
-import { isArchived } from './migsi-status'
 import { Migration } from './migration'
+import { isArchived } from './migsi-status'
+import { getLogger } from './utils'
 
 const MIGSI_DATA_VERSION = 3
 

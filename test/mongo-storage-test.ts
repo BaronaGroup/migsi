@@ -1,9 +1,10 @@
-import { wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure } from './test-utils'
-import mongoStorage, { defaultCollectionName } from '../src/storage/mongo'
 import { assert } from 'chai'
-import { MongoClient, Db, Collection } from 'mongodb'
-import { delay } from '../src/utils'
+import { Collection, Db, MongoClient } from 'mongodb'
+
 import logger from '../src/default-logger'
+import mongoStorage, { defaultCollectionName } from '../src/storage/mongo'
+import { delay } from '../src/utils'
+import { assertMigrations, configure, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('mongo-storage-test', function () {
   const defaultMongoURL = 'mongodb://localhost/migsi-test'

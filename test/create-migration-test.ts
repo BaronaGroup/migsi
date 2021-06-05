@@ -1,8 +1,10 @@
-import { wipeWorkspace, configure, runMigrations, expectFailure } from './test-utils'
-import * as core from '../src/core'
 import * as fs from 'fs'
-import { assert } from 'chai'
 import * as path from 'path'
+
+import { assert } from 'chai'
+
+import * as core from '../src/core'
+import { configure, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('create-migration-test.js', function () {
   before(function () {

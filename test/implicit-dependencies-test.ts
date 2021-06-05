@@ -1,8 +1,10 @@
-import { wipeWorkspace, createMigration, runMigrations, assertMigrations, configure } from './test-utils'
-import * as core from '../src/core'
 import * as fs from 'fs'
 import * as path from 'path'
+
 import { assert } from 'chai'
+
+import * as core from '../src/core'
+import { assertMigrations, configure, createMigration, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('implicit-dependencies-test', function () {
   const templateDir = path.join(__dirname, '../test-workspace'),

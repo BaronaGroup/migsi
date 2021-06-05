@@ -1,8 +1,9 @@
-import { wipeWorkspace, createMigration, runMigrations, configure, expectFailure } from './test-utils'
-import noneStorage from '../src/storage/none'
 import { assert } from 'chai'
 import * as _ from 'lodash'
+
+import noneStorage from '../src/storage/none'
 import { getLogger } from '../src/utils'
+import { configure, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 interface LogOutput {
   info: any[][]

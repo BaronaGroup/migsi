@@ -1,4 +1,4 @@
-import { wipeWorkspace, createMigration, runMigrations, assertMigrations, configure } from './test-utils'
+import { assertMigrations, configure, createMigration, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('simple-cases', function () {
   before(configure)

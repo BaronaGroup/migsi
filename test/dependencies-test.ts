@@ -1,4 +1,4 @@
-import { wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure } from './test-utils'
+import { assertMigrations, configure, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('dependencies-test', function () {
   before(function () {

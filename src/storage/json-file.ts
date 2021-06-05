@@ -1,7 +1,9 @@
-import * as _ from 'lodash'
 import * as fs from 'fs'
-import { Migration } from '../migration'
+
+import * as _ from 'lodash'
+
 import { Storage } from '../config'
+import { Migration } from '../migration'
 
 const api = {
   loadPastMigrations,

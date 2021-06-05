@@ -1,19 +1,20 @@
-import {
-  wipeWorkspace,
-  configure,
-  runMigrations,
-  expectFailure,
-  assertMigrations,
-  createMigration,
-  replaceInFile,
-  wipeTestModuleCache,
-} from './test-utils'
+import * as fs from 'fs'
+import * as path from 'path'
+
+import { assert } from 'chai'
 
 import * as core from '../src/core'
-import * as fs from 'fs'
-import { assert } from 'chai'
-import * as path from 'path'
 import { Migration } from '../src/migration'
+import {
+  assertMigrations,
+  configure,
+  createMigration,
+  expectFailure,
+  replaceInFile,
+  runMigrations,
+  wipeTestModuleCache,
+  wipeWorkspace,
+} from './test-utils'
 
 describe('config-options-test', function () {
   beforeEach(wipeWorkspace)

@@ -1,6 +1,6 @@
-import { wipeWorkspace, createMigration, runMigrations, assertMigrations, configure } from './test-utils'
 import * as core from '../src/core'
 import { reset } from '../src/migsi-status'
+import { assertMigrations, configure, createMigration, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('archived-migration-test', function () {
   before(configure)

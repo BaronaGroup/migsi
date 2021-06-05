@@ -1,8 +1,10 @@
-import { wipeWorkspace, createMigration, runMigrations, assertMigrations, configure, expectFailure } from './test-utils'
-import jsonStorage from '../src/storage/json-file'
-import * as path from 'path'
-import { assert } from 'chai'
 import * as fs from 'fs'
+import * as path from 'path'
+
+import { assert } from 'chai'
+
+import jsonStorage from '../src/storage/json-file'
+import { assertMigrations, configure, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('json-storage-test', function () {
   beforeEach(wipeWorkspace)

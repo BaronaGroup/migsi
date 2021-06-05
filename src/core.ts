@@ -1,14 +1,16 @@
-import * as path from 'path'
 import * as fs from 'fs'
-import { xtermColor } from './xterm-color-tty-only'
+import * as path from 'path'
+
 import * as _ from 'lodash'
-import { config, getDir, setupConfig, findAndLoadConfig, Config } from './config'
-import { findMigrations } from './migration-loader'
-import SupportManager from './support-manager'
-import { trackOutput } from './output-tracker'
-import { getLogger } from './utils'
-import { archive as archiveImpl } from './migsi-status'
+
+import { Config, config, findAndLoadConfig, getDir, setupConfig } from './config'
 import { Migration, RunnableMigration, TemplateVariables } from './migration'
+import { findMigrations } from './migration-loader'
+import { archive as archiveImpl } from './migsi-status'
+import { trackOutput } from './output-tracker'
+import SupportManager from './support-manager'
+import { getLogger } from './utils'
+import { xtermColor } from './xterm-color-tty-only'
 
 interface MigrationFilters {
   name?: string

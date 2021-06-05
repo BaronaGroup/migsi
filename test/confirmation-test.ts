@@ -1,7 +1,8 @@
-import { wipeWorkspace, createMigration, assertMigrations, configure, expectFailure } from './test-utils'
-import { runMigrations } from '../src/core'
 import { assert } from 'chai'
+
+import { runMigrations } from '../src/core'
 import { Migration } from '../src/migration'
+import { assertMigrations, configure, createMigration, expectFailure, wipeWorkspace } from './test-utils'
 
 describe('confirmation-test', function () {
   beforeEach(wipeWorkspace)

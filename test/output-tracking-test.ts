@@ -1,8 +1,9 @@
 /* eslint no-console: 0 */
 
-import { wipeWorkspace, createMigration, runMigrations, configure, expectFailure } from './test-utils'
 import { assert } from 'chai'
+
 import { config } from '../src/config'
+import { configure, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('output-tracking-test', function () {
   beforeEach(wipeWorkspace)

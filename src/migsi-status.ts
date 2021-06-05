@@ -1,6 +1,7 @@
-import { config, getDir } from './config'
 import * as fs from 'fs'
 import { Stats } from 'fs'
+
+import { config, getDir } from './config'
 import { Migration } from './migration'
 
 let activeStatus: MigsiStatus | undefined

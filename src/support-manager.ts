@@ -1,4 +1,5 @@
 import * as _ from 'lodash'
+
 import { Config, config } from './config'
 import { Migration } from './migration'
 

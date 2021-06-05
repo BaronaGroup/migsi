@@ -1,5 +1,6 @@
-import { MongoClient, Db } from 'mongodb'
 import * as _ from 'lodash'
+import { Db, MongoClient } from 'mongodb'
+
 import { Migration } from '../migration'
 
 const api = {

@@ -1,9 +1,11 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import * as core from '../src/core'
+
 import { assert } from 'chai'
-import { setupConfig } from '../src/config'
 import * as _ from 'lodash'
+
+import { setupConfig } from '../src/config'
+import * as core from '../src/core'
 import jsonFileStorage from '../src/storage/json-file'
 
 const testResultFile = __dirname + '/../test-workspace/output.json'
