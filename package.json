@@ -15,7 +15,7 @@
     "@types/mocha": "8.2.2",
     "@types/mongodb": "3.6.18",
     "@types/node": "14.17.3",
-    "@typescript-eslint/parser": "4.27.0",
+    "@typescript-eslint/parser": "4.28.0",
     "background-eslint-hook": "1.0.0",
     "chai": "4.3.4",
     "eslint": "7.29.0",
