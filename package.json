@@ -18,7 +18,7 @@
     "@typescript-eslint/parser": "4.28.1",
     "background-eslint-hook": "1.0.0",
     "chai": "4.3.4",
-    "eslint": "7.29.0",
+    "eslint": "7.30.0",
     "gulp": "4.0.2",
     "gulp-clean": "0.4.0",
     "gulp-symlink": "2.1.4",
