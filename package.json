@@ -13,7 +13,7 @@
     "@types/inquirer": "7.3.3",
     "@types/lodash": "4.14.171",
     "@types/mocha": "8.2.3",
-    "@types/mongodb": "3.6.19",
+    "@types/mongodb": "3.6.20",
     "@types/node": "14.17.5",
     "@typescript-eslint/parser": "4.28.2",
     "background-eslint-hook": "1.0.0",
@@ -61,7 +61,7 @@
     "inquirer": "8.1.0",
     "lodash": "4.17.21",
     "moment": "2.29.1",
-    "mongodb": "3.6.9",
+    "mongodb": "3.6.10",
     "node-getopt-long": "0.4.0"
   },
   "types": "build/es2017/core.d.ts",
