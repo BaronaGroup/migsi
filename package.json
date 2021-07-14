@@ -58,7 +58,7 @@
   "dependencies": {
     "cli-color": "2.0.0",
     "dependency-solver": "^1.0.6",
-    "inquirer": "8.1.0",
+    "inquirer": "8.1.2",
     "lodash": "4.17.21",
     "moment": "2.29.1",
     "mongodb": "3.6.9",
