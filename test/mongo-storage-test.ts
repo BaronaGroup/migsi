@@ -7,7 +7,7 @@ import { delay } from '../src/utils'
 import { assertMigrations, configure, createMigration, expectFailure, runMigrations, wipeWorkspace } from './test-utils'
 
 describe('mongo-storage-test', function () {
-  const defaultMongoURL = 'mongodb://localhost/migsi-test'
+  const defaultMongoURL = 'mongodb://localhost/migsi-test?directConnection=true'
   const mongoURL = process.env.MIGSI_MONGO_URL || defaultMongoURL
   const customCollectionName = 'anothercollection'
 
@@ -29,8 +29,8 @@ describe('mongo-storage-test', function () {
         try {
           const db = connection.db()
           await Promise.all([
-            db.collection(customCollectionName).remove({}),
-            db.collection(defaultCollectionName).remove({}),
+            db.collection(customCollectionName).deleteMany({}),
+            db.collection(defaultCollectionName).deleteMany({}),
           ])
           await delay(200) // another connection might not see the changes immediately, so we delay a bit here
           enabled = true
