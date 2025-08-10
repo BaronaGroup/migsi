@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@types/chai": "4.3.16",
-    "@types/cli-color": "2.0.1",
+    "@types/cli-color": "2.0.6",
     "@types/inquirer": "8.1.1",
     "@types/lodash": "4.17.0",
     "@types/mocha": "9.1.1",
@@ -55,7 +55,7 @@
   "main": "lib/migsi.js",
   "bin": "./bin/migsi",
   "dependencies": {
-    "cli-color": "2.0.0",
+    "cli-color": "2.0.4",
     "dependency-solver": "^1.0.6",
     "inquirer": "8.1.2",
     "lodash": "4.17.21",
